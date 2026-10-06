@@ -1,0 +1,18 @@
+{
+  "doc_1": {
+    "document_type": "water_bill",
+    "account_number": "WSB-88213-XX",
+    "billing_period": "2026-08",
+    "amount_due": "Rs. 1,240",
+    "previous_reading": 1820,
+    "current_reading": 2650,
+    "address": "Sample Address Line, Rajpura, Punjab"
+  },
+  "doc_2": {
+    "document_type": "identity_proof",
+    "id_type": "Voter ID",
+    "id_number_last4": "8823",
+    "name": "Sample Citizen C",
+    "address": "Sample Address Line, Rajpura, Punjab"
+  }
+}

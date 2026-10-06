@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://janconnect-backend-t3vo.onrender.com/api/:match*"
+    }
+  ]
+}

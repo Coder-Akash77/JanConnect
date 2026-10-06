@@ -1,0 +1,82 @@
+{
+  "water": {
+    "department_name": "MCC Water Supply & Sewerage Operations (Public Health Wing)",
+    "official_authority": "Municipal Corporation Chandigarh (MCC)",
+    "helpline": "0172-2540200 / 0172-2787200",
+    "office_location": "MCC Head Office, New Deluxe Building, Sector 17, Chandigarh",
+    "keywords": [
+      "water", "meter", "bill", "pipeline", "leak", "sewerage", "tap", "pani", "paani", 
+      "ganda pani", "supply", "low pressure", "e-sampark", "sewer", "drainage", "water bill",
+      "pumping", "kandhari", "kajheri", "contamination", "jal"
+    ],
+    "policy_snippets": [
+      "Disputed water bills received via e-Sampark may be submitted for re-metering within 30 days. Disputed billing complaints are resolved within 15 working days. No testing fee if meter is defective (+/- 3%).",
+      "Major pipeline leakages or contamination in sector lines must be inspected within 4 hours and repaired within 24 to 48 hours.",
+      "Sewerage blockages and overflowing manholes are cleared via super-suction machines within 24 hours of filing.",
+      "Official 24x7 Water Supply Control Room: 0172-2540200 | MCC ICCC: 0172-2787200."
+    ]
+  },
+  "electricity": {
+    "department_name": "Chandigarh Power Distribution Limited (CPDL)",
+    "official_authority": "Electricity Department, UT Chandigarh",
+    "helpline": "19121",
+    "office_location": "Electricity Operation Circle, UT Secretariat, Sector 18, Chandigarh",
+    "keywords": [
+      "electricity", "power", "outage", "bijli", "transformer", "feeder", "voltage", 
+      "power cut", "meter", "burnt meter", "cpdl", "19121", "batti gul", "batti band", "current",
+      "phase", "trip", "electricity bill", "cgrf", "fluctuation", "wire", "no power"
+    ],
+    "policy_snippets": [
+      "Power outages exceeding 4 hours in urban sectors must be logged on the outage portal and restored within 4 hours. Unresolved outages escalate to SDO after 2h and Executive Engineer after 4h.",
+      "Distribution transformer breakdowns or 11kV feeder faults must be replaced and supply restored within 24 to 72 hours under JERC standards.",
+      "Defective or burnt electricity meters are inspected within 7 working days and replaced within 15 working days.",
+      "24x7 Central Power Call Centre: 19121 | Consumer Grievance Redressal Forum (CGRF), Sector 18."
+    ]
+  },
+  "sanitation": {
+    "department_name": "MCC Medical Officer of Health (MOH) — Sanitation & Waste",
+    "official_authority": "Municipal Corporation Chandigarh (MCC)",
+    "helpline": "WhatsApp: 9915762917 / ICCC: 0172-2787200",
+    "office_location": "MOH Wing, Municipal Corporation, Sector 17, Chandigarh",
+    "keywords": [
+      "sanitation", "garbage", "waste", "kooda", "kachra", "safai", "dustbin", "dumper", 
+      "tipper", "door to door", "collection", "swachhata", "ssk", "sehaj safai kendra", 
+      "dadumajra", "carcass", "dead animal", "sweeper", "malba", "litter", "dump"
+    ],
+    "policy_snippets": [
+      "Missed door-to-door segregated garbage collection vehicle must be redressed within 24 hours of citizen reporting.",
+      "Accumulated garbage dumps, overflowing Sehaj Safai Kendras (SSKs), or dead animal removal must be cleared within 12 to 24 hours.",
+      "Waste processing complaints and storm-water drain choking must be addressed within 48 hours.",
+      "Dedicated MCC WhatsApp Grievance Hotline: 9915762917 | Central Control Room: 0172-2787200."
+    ]
+  },
+  "roads": {
+    "department_name": "MCC Roads, Streetlights & Infrastructure (B&R Division)",
+    "official_authority": "Municipal Corporation Chandigarh (MCC)",
+    "helpline": "0172-2787200 / e-Sampark: 1800-180-1725",
+    "office_location": "B&R Division, Municipal Corporation, Sector 17, Chandigarh",
+    "keywords": [
+      "road", "roads", "streetlight", "street light", "streetlights", "street lights", "pothole", "potholes", 
+      "sadak", "gaddha", "khamba", "light pole", "dark spot", "andhera", "footpath", "paver", "berm", 
+      "pruning", "tree branch", "b&r", "infrastructure", "traffic signal", "caving", "park light"
+    ],
+    "policy_snippets": [
+      "Non-functional LED streetlights on sector roads (V3/V4/V5/V6) or dark spots must be repaired within 3 to 7 working days under EESL contract.",
+      "Dangerous potholes, road cave-ins, or damaged footpaths on sector roads must be repaired with bitumen patchwork within 7 working days.",
+      "Overgrown tree branches obstructing streetlights or road signboards must be pruned within 5 working days.",
+      "MCC ICCC Toll-Free: 0172-2787200 | e-Sampark: 1800-180-1725."
+    ]
+  },
+  "rti": {
+    "department_name": "Right to Information (RTI) Cell",
+    "official_authority": "UT Administration Chandigarh",
+    "helpline": "e-Sampark: 1800-180-1725",
+    "office_location": "UT Secretariat, Sector 9, Chandigarh",
+    "keywords": ["rti", "right to information", "application", "public information", "records", "appeal"],
+    "policy_snippets": [
+      "An RTI application can be filed online or via any e-Sampark center in Chandigarh with the statutory ₹10 application fee.",
+      "The Public Information Officer (PIO) must furnish information within 30 days of application receipt.",
+      "If information concerns life or liberty of a person, it must be provided within 48 hours."
+    ]
+  }
+}

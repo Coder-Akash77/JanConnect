@@ -1,0 +1,236 @@
+{
+  "backend/app.py": {
+    "mtime": 1790084575.872407,
+    "seen": 1790104495.5796933,
+    "ast_hash": "54c8475b1c98c2fb5c5c2c7adac0ba57",
+    "semantic_hash": ""
+  },
+  "backend/mock_data/citizen_documents.json": {
+    "mtime": 1790084575.876032,
+    "seen": 1790104495.5797167,
+    "ast_hash": "e7cab21987e03fc50b7dfffb77a6495e",
+    "semantic_hash": ""
+  },
+  "backend/mock_data/complaints.json": {
+    "mtime": 1789991559.6915214,
+    "seen": 1790104495.5797226,
+    "ast_hash": "2f2b0894d131cf06e0d431d4a17752b1",
+    "semantic_hash": ""
+  },
+  "backend/mock_data/complaints_sample.json": {
+    "mtime": 1789999121.8878276,
+    "seen": 1790104495.581704,
+    "ast_hash": "f099aa88b66dbb0b3386dd3d112013dd",
+    "semantic_hash": ""
+  },
+  "backend/mock_data/department_policies.json": {
+    "mtime": 1790084575.877302,
+    "seen": 1790104495.5817373,
+    "ast_hash": "a3972c4c54fd0c0734223f2bdf21f2ef",
+    "semantic_hash": ""
+  },
+  "backend/services/__init__.py": {
+    "mtime": 1789991559.6991575,
+    "seen": 1790104495.5817666,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/services/agents.py": {
+    "mtime": 1790084575.8798168,
+    "seen": 1790104495.5817735,
+    "ast_hash": "b79bebb0ddb757536f7109dbf7241852",
+    "semantic_hash": ""
+  },
+  "backend/services/extraction.py": {
+    "mtime": 1790084575.8817804,
+    "seen": 1790104495.5817792,
+    "ast_hash": "055017a74047bda85ac125f7355b7806",
+    "semantic_hash": ""
+  },
+  "backend/services/filing.py": {
+    "mtime": 1790084575.8817804,
+    "seen": 1790104495.5817845,
+    "ast_hash": "cab5f96913a4ec2e4736d94549a442e8",
+    "semantic_hash": ""
+  },
+  "backend/services/intake.py": {
+    "mtime": 1790084575.88414,
+    "seen": 1790104495.5817897,
+    "ast_hash": "5e4adee3654207bdee6e546a58220676",
+    "semantic_hash": ""
+  },
+  "backend/services/routing.py": {
+    "mtime": 1790084575.8856742,
+    "seen": 1790104495.5818012,
+    "ast_hash": "2210a5076c3cb42e3b039296df00d8d5",
+    "semantic_hash": ""
+  },
+  "frontend/package.json": {
+    "mtime": 1790107311.5357544,
+    "seen": 1790108144.0260398,
+    "ast_hash": "fa9fa45f1b6e3b5c8f474fe9d3e6214a",
+    "semantic_hash": ""
+  },
+  "frontend/src/App.jsx": {
+    "mtime": 1790107463.3650076,
+    "seen": 1790108144.0260422,
+    "ast_hash": "e78c97a9f4834f3480c457d789fc7832",
+    "semantic_hash": ""
+  },
+  "frontend/src/main.jsx": {
+    "mtime": 1789991559.715712,
+    "seen": 1790104495.5818877,
+    "ast_hash": "ee132c65752e87498b759faf5df175d1",
+    "semantic_hash": ""
+  },
+  "frontend/vite.config.js": {
+    "mtime": 1789991559.716691,
+    "seen": 1790104495.5818925,
+    "ast_hash": "ba595304e3a71eae39641f8bcfc05be0",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1789991559.6766834,
+    "seen": 1790104495.5818992,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/skills/graphify/SKILL.md": {
+    "mtime": 1789991559.6792114,
+    "seen": 1790104495.581905,
+    "ast_hash": "256690fb316381eb5a4437fcd7a2cb24",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1789991559.6812115,
+    "seen": 1790104495.5819104,
+    "ast_hash": "a831cf3669f1e6ab85d8a80ebe655f99",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1790084575.867663,
+    "seen": 1790104495.5819151,
+    "ast_hash": "54381a8463d3e3d5ae441ef8d57dc3d5",
+    "semantic_hash": ""
+  },
+  "PROJECT_EXPLANATION.md": {
+    "mtime": 1790084575.8686624,
+    "seen": 1790104495.58192,
+    "ast_hash": "a4695d4e74993032a0f47bdd530ffd44",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1790087940.740347,
+    "seen": 1790104495.5819254,
+    "ast_hash": "e28197fb352e4caadb0fc72c8ca48728",
+    "semantic_hash": ""
+  },
+  "backend/requirements.txt": {
+    "mtime": 1790084575.8788166,
+    "seen": 1790104495.5819304,
+    "ast_hash": "09097f2bc6fd1a2c97900176d7e45935",
+    "semantic_hash": ""
+  },
+  "frontend/index.html": {
+    "mtime": 1790105200.012938,
+    "seen": 1790106547.0506985,
+    "ast_hash": "c4bc427f37eb9d0bf089a9c24229b767",
+    "semantic_hash": ""
+  },
+  "policies.txt": {
+    "mtime": 1789999104.0619962,
+    "seen": 1790104495.5819416,
+    "ast_hash": "a091fbb374843f63767c036ae32b77c4",
+    "semantic_hash": ""
+  },
+  "backend/services/speech.py": {
+    "mtime": 1790084575.8866806,
+    "seen": 1790104495.5818062,
+    "ast_hash": "91a1183cab411de9bc02e2b453b95df4",
+    "semantic_hash": ""
+  },
+  "backend/services/policy_qa.py": {
+    "mtime": 1790084575.88414,
+    "seen": 1790104495.5817957,
+    "ast_hash": "a343ff85ccfee2ef4c352e10a0a47259",
+    "semantic_hash": ""
+  },
+  "backend/e2e_test.py": {
+    "mtime": 1790084575.8737817,
+    "seen": 1790104495.5797076,
+    "ast_hash": "b2286ed6d640ba7c092dff14f1074388",
+    "semantic_hash": ""
+  },
+  "backend/services/storage.py": {
+    "mtime": 1790002031.2699094,
+    "seen": 1790104495.5818124,
+    "ast_hash": "dcacb298799e388b0d58ccd2a6d71418",
+    "semantic_hash": ""
+  },
+  "backend/smoke_test.py": {
+    "mtime": 1789993792.2587774,
+    "seen": 1790104495.5818186,
+    "ast_hash": "498914e15a010ac6ab4939f28077656c",
+    "semantic_hash": ""
+  },
+  "backend/sync_azure.py": {
+    "mtime": 1790002278.2808914,
+    "seen": 1790104495.581824,
+    "ast_hash": "75d3ccdd18bb3569c96168d10f1e2077",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/AdminLoginModal.jsx": {
+    "mtime": 1790107654.96164,
+    "seen": 1790108144.0260437,
+    "ast_hash": "599fa967a3473ded71c924f908b9f550",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/DepartmentMatrix.jsx": {
+    "mtime": 1790107587.261616,
+    "seen": 1790108144.026045,
+    "ast_hash": "15fb3d0087e31a74662647f26a3f1257",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/DocumentIntelligence.jsx": {
+    "mtime": 1790107563.681363,
+    "seen": 1790108144.0260468,
+    "ast_hash": "2ec60c21f385b287c97bc6f2cf2e130a",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/GrievanceNavigator.jsx": {
+    "mtime": 1790107514.1928663,
+    "seen": 1790108144.026048,
+    "ast_hash": "1cc0cb9e3158abe827bec2f8ebee16dc",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/Navbar.jsx": {
+    "mtime": 1790107398.2527618,
+    "seen": 1790108144.0260494,
+    "ast_hash": "36db399df17e7efb356d369ed510cc1b",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/OfficerDesk.jsx": {
+    "mtime": 1790107682.7960837,
+    "seen": 1790108144.0260506,
+    "ast_hash": "003c3203c6055fd65bbdd74c238e1540",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/PipelineStepper.jsx": {
+    "mtime": 1790107412.6351752,
+    "seen": 1790108144.026052,
+    "ast_hash": "6ac8db0138491ff2e144750827e86fa0",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/PolicyClarifier.jsx": {
+    "mtime": 1790107637.2972162,
+    "seen": 1790108144.0260534,
+    "ast_hash": "fe04eee7ff6260247fa5edefdf907b8d",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/StatusTracker.jsx": {
+    "mtime": 1790107544.5613785,
+    "seen": 1790108144.0260549,
+    "ast_hash": "fc2a6d0f8d44c26598b6c03793aa149f",
+    "semantic_hash": ""
+  }
+}

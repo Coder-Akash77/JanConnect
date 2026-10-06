@@ -1,0 +1,2733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JanConnect — Complete Call Flow &amp; Architecture Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>JanConnect — Complete Call Flow &amp; Architecture Documentation</h1>
+<p class="subtitle">Generated from graphify knowledge graph: 269 nodes, 382 edges, 19 communities. Commit: 5b9f7dc</p>
+
+<div class="nav">
+    <a href="#overview">Architecture Overview</a>
+    <a href="#extract-pipeline">Extraction Pipeline</a>
+    <a href="#build-graph">Graph Build</a>
+    <a href="#cli-skills">CLI &amp; Skill Installers</a>
+    <a href="#ingest-cache-update">Ingestion &amp; Updates</a>
+    <a href="#serve-api">Serving API</a>
+    <a href="#tests-fixtures">Tests &amp; Fixtures</a>
+    <a href="#detailed-component-walkthrough">🔍 Detailed Component Walkthrough</a>
+    <a href="#routing-py">routing.py</a>
+    <a href="#agents-md-janconnect-project-guide-for-ai-agents">AGENTS.md — JanConnect Project Guide for AI Agents</a>
+    <a href="#rules-graphify-md">rules/graphify.md</a>
+    <a href="#workflows-graphify-md">workflows/graphify.md</a>
+    <a href="#vite-config-js">vite.config.js</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    EXTRACT_PIPELINE_5F350230("Extraction Pipeline<br/><small>16 nodes</small>")
+    class EXTRACT_PIPELINE_5F350230 module;
+    BUILD_GRAPH_321CBB04("Graph Build<br/><small>49 nodes</small>")
+    class BUILD_GRAPH_321CBB04 module;
+    CLI_SKILLS_9964CBB8("CLI &amp; Skill Installers<br/><small>31 nodes</small>")
+    class CLI_SKILLS_9964CBB8 module;
+    INGEST_CACHE_UPDATE_FF457338("Ingestion &amp; Updates<br/><small>4 nodes</small>")
+    class INGEST_CACHE_UPDATE_FF457338 module;
+    SERVE_API_35EC8E86("Serving API<br/><small>102 nodes</small>")
+    class SERVE_API_35EC8E86 module;
+    TESTS_FIXTURES_B84B1DCC("Tests &amp; Fixtures<br/><small>24 nodes</small>")
+    class TESTS_FIXTURES_B84B1DCC module;
+    DETAILED_COMPONENT_WALKTHROUGH_0B466CF7("🔍 Detailed Component Walkthrough<br/><small>17 nodes</small>")
+    class DETAILED_COMPONENT_WALKTHROUGH_0B466CF7 module;
+    ROUTING_PY_17DFB041("routing.py<br/><small>11 nodes</small>")
+    class ROUTING_PY_17DFB041 module;
+    AGENTS_MD_JANCONNECT_PROJECT_GUIDE_FOR_AI_AGENTS_0DA84C67("AGENTS.md — JanConnect Project Guide for AI Agents<br/><small>10 nodes</small>")
+    class AGENTS_MD_JANCONNECT_PROJECT_GUIDE_FOR_AI_AGENTS_0DA84C67 module;
+    RULES_GRAPHIFY_MD_3459230E("rules/graphify.md<br/><small>2 nodes</small>")
+    class RULES_GRAPHIFY_MD_3459230E module;
+    WORKFLOWS_GRAPHIFY_MD_C6A40BAC("workflows/graphify.md<br/><small>2 nodes</small>")
+    class WORKFLOWS_GRAPHIFY_MD_C6A40BAC module;
+    VITE_CONFIG_JS_25BB7A32("vite.config.js<br/><small>1 nodes</small>")
+    class VITE_CONFIG_JS_25BB7A32 module;
+    SERVE_API_35EC8E86 -->|contains x8| EXTRACT_PIPELINE_5F350230
+    TESTS_FIXTURES_B84B1DCC -->|imports x7| SERVE_API_35EC8E86
+    SERVE_API_35EC8E86 -->|calls x6| ROUTING_PY_17DFB041
+    SERVE_API_35EC8E86 -->|contains x4| TESTS_FIXTURES_B84B1DCC
+    EXTRACT_PIPELINE_5F350230 -->|references x3| SERVE_API_35EC8E86
+    SERVE_API_35EC8E86 -->|contains x2| INGEST_CACHE_UPDATE_FF457338
+    ROUTING_PY_17DFB041 -->|imports x2| SERVE_API_35EC8E86
+    INGEST_CACHE_UPDATE_FF457338 -->|references| SERVE_API_35EC8E86
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>Extraction Pipeline</td><td>16</td><td><code>5, 14</code></td></tr><tr><td>Graph Build</td><td>49</td><td><code>0, 9</code></td></tr><tr><td>CLI &amp; Skill Installers</td><td>31</td><td><code>12, 8</code></td></tr><tr><td>Ingestion &amp; Updates</td><td>4</td><td><code>18</code></td></tr><tr><td>Serving API</td><td>102</td><td><code>1, 2, 3, 4</code></td></tr><tr><td>Tests &amp; Fixtures</td><td>24</td><td><code>13, 17</code></td></tr><tr><td>🔍 Detailed Component Walkthrough</td><td>17</td><td><code>6</code></td></tr><tr><td>routing.py</td><td>11</td><td><code>15</code></td></tr><tr><td>AGENTS.md — JanConnect Project Guide for AI Agents</td><td>10</td><td><code>7</code></td></tr><tr><td>rules/graphify.md</td><td>2</td><td><code>10</code></td></tr><tr><td>workflows/graphify.md</td><td>2</td><td><code>11</code></td></tr><tr><td>vite.config.js</td><td>1</td><td><code>16</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Core Flow</h4>
+    <div class="arrow-chain">Graph Build -&gt; Extraction Pipeline -&gt; Serving API -&gt; routing.py -&gt; CLI &amp; Skill Installers -&gt; Ingestion &amp; Updates -&gt; Tests &amp; Fixtures</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>269 nodes · 382 edges · 19 communities (17 shown, 2 thin omitted)</li>
+      <li>Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `JanConnect (जन कनेक्ट / ਚੰਡੀਗੜ੍ਹ ਜਨ ਕਨੈਕਟ)` - 10 edges</li>
+      <li>2. `🔍 Detailed Component Walkthrough` - 9 edges</li>
+      <li>3. `route_complaint()` - 8 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. Extraction Pipeline ====== -->
+<h2 id="extract-pipeline">2. Extraction Pipeline</h2>
+<p>Extraction Pipeline groups implementation around backend, services, policy, extract, mostly in backend/app.py, backend/services/extraction.py, backend/services/policy_qa.py. This section covers 16 nodes and 15 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Extraction Pipeline (16 nodes, 15 edges)
+    subgraph extract_pipeline_backend_app_py_f3f08d2e["backend/app.py"]
+        backend_app_extract_policy_endpoint_004125b9("extract_policy_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_extract_file_endpoint_ceb9b454("extract_file_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_extract_text_endpoint_1d9e3dc7("extract_text_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_rationale_288_2df569c5("Extracts text from uploaded policy docu...<br/><small>backend/app.py</small>")
+        backend_app_rationale_111_a3b70cad("Stage 2: extract entities from custom p...<br/><small>backend/app.py</small>")
+        backend_app_rationale_121_d8079907("Stage 2: extract entities from uploaded...<br/><small>backend/app.py</small>")
+    end
+    subgraph extract_pipeline_backend_services_extraction_py_ab5ac002["backend/services/extraction.py"]
+        backend_services_extraction_extract_document_fro_253a5233("document from bytes()<br/><small>backend/services/extraction.py</small>")
+        backend_services_extraction_extract_document_fro_33527436("extract_document_from_text()<br/><small>backend/services/extraction.py</small>")
+        backend_services_extraction_upload_document_to_b_33e5c8a8("upload_document_to_blob()<br/><small>backend/services/extraction.py</small>")
+        backend_services_extraction_rationale_82_2677b97d("Analyzes an uploaded citizen document (...<br/><small>backend/services/extraction.py</small>")
+        backend_services_extraction_rationale_43_5fe06f63("Uploads an uploaded citizen document to...<br/><small>backend/services/extraction.py</small>")
+        backend_services_extraction_rationale_142_77346cca("Uses Azure OpenAI (gpt-5-mini) to extra...<br/><small>backend/services/extraction.py</small>")
+    end
+    subgraph extract_pipeline_backend_services_policy_qa_py_8407496b["backend/services/policy_qa.py"]
+        backend_services_policy_qa_extract_policy_conten_2e5ab6e4("extract_policy_content()<br/><small>backend/services/policy_qa.py</small>")
+        backend_services_policy_qa_upload_policy_to_blob_6797d11e("upload_policy_to_blob()<br/><small>backend/services/policy_qa.py</small>")
+        backend_services_policy_qa_rationale_161_a3b8fb42("Extracts policy text from uploaded file...<br/><small>backend/services/policy_qa.py</small>")
+        backend_services_policy_qa_rationale_122_7e573dc4("Uploads an official government policy c...<br/><small>backend/services/policy_qa.py</small>")
+    end
+    backend_app_extract_policy_endpoint_004125b9 -->|calls| backend_services_policy_qa_extract_policy_conten_2e5ab6e4
+    backend_app_extract_policy_endpoint_004125b9 -->|calls| backend_services_policy_qa_upload_policy_to_blob_6797d11e
+    backend_services_policy_qa_extract_policy_conten_2e5ab6e4 -->|calls| backend_services_policy_qa_upload_policy_to_blob_6797d11e
+    backend_app_extract_file_endpoint_ceb9b454 -->|calls| backend_services_extraction_extract_document_fro_253a5233
+    backend_app_extract_text_endpoint_1d9e3dc7 -->|calls| backend_services_extraction_extract_document_fro_33527436
+    backend_services_extraction_extract_document_fro_253a5233 -->|calls| backend_services_extraction_extract_document_fro_33527436
+    backend_services_extraction_extract_document_fro_253a5233 -->|calls| backend_services_extraction_upload_document_to_b_33e5c8a8
+    class backend_app_extract_policy_endpoint_004125b9 api;
+    class backend_app_extract_file_endpoint_ceb9b454 api;
+    class backend_app_extract_text_endpoint_1d9e3dc7 api;
+    class backend_app_rationale_288_2df569c5 concept;
+    class backend_app_rationale_111_a3b70cad concept;
+    class backend_app_rationale_121_d8079907 concept;
+    class backend_services_extraction_extract_document_fro_253a5233 function;
+    class backend_services_extraction_extract_document_fro_33527436 function;
+    class backend_services_extraction_upload_document_to_b_33e5c8a8 function;
+    class backend_services_extraction_rationale_82_2677b97d concept;
+    class backend_services_extraction_rationale_43_5fe06f63 concept;
+    class backend_services_extraction_rationale_142_77346cca concept;
+    class backend_services_policy_qa_extract_policy_conten_2e5ab6e4 function;
+    class backend_services_policy_qa_upload_policy_to_blob_6797d11e function;
+    class backend_services_policy_qa_rationale_161_a3b8fb42 concept;
+    class backend_services_policy_qa_rationale_122_7e573dc4 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>extract_file_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>document from bytes()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>extract_file_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>extract_text_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>extract_document_from_text()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>extract_text_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>extract_document_from_bytes()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>extract_file_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>extract_document_from_text()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small><br><code>upload_document_to_blob()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>extract_document_from_bytes() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>extract_document_from_text()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>document from bytes()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small><br><code>extract_text_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>extract_document_from_text() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>upload_document_to_blob()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>document from bytes()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>upload_document_to_blob() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Stage 2: extract entities from custom pasted text.</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 2: extract entities from custom pasted text..</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Stage 2: extract entities from uploaded document file using Azure Document…</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 2: extract entities from uploaded document file using Azure Document….</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Uses Azure OpenAI (gpt-5-mini) to extract all structured key-value entities…</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Uses Azure OpenAI (gpt-5-mini) to extract all structured key-value entities….</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Uploads an uploaded citizen document to Azure Blob Storage (&#x27;citizendocuments&#x27;…</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Uploads an uploaded citizen document to Azure Blob Storage (&#x27;citizendocuments&#x27;….</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Analyzes an uploaded citizen document (PDF, PNG, JPG) using Azure Document…</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Analyzes an uploaded citizen document (PDF, PNG, JPG) using Azure Document….</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>extract_policy_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>extract_policy_content()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small><br><code>upload_policy_to_blob()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td>extract_policy_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>extract_policy_content()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>extract_policy_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>upload_policy_to_blob()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td>extract_policy_content() node in backend/services/policy_qa.py.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>upload_policy_to_blob()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>extract_policy_content()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small><br><code>extract_policy_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>upload_policy_to_blob() node in backend/services/policy_qa.py.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>Extracts text from uploaded policy document (PDF/Image/Text).</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Extracts text from uploaded policy document (PDF/Image/Text)..</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>Uploads an official government policy circular into Azure Blob Storage…</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Uploads an official government policy circular into Azure Blob Storage….</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>Extracts policy text from uploaded files (PDF, image, text) using Azure…</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Extracts policy text from uploaded files (PDF, image, text) using Azure….</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>backend/app.py</code></td><td>6 nodes</td></tr>
+<tr><td><code>backend/services/extraction.py</code></td><td>6 nodes</td></tr>
+<tr><td><code>backend/services/policy_qa.py</code></td><td>4 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: explains x8, calls x7. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. Graph Build ====== -->
+<h2 id="build-graph">3. Graph Build</h2>
+<p>Graph Build groups implementation around frontend, packagejson, readmemd, react, mostly in frontend/package.json, README.md. This section covers 49 nodes and 47 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Graph Build (49 nodes, 47 edges)
+    frontend_package_dependencies_canvas_confetti_6e51f5af("canvas-confetti<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_gsap_b08b77ed("gsap<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_gsap_react_f80dd55c("@gsap/react<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_lucide_react_68de9d29("lucide-react<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_react_f565c299("react<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_react_dom_eefcf95b("react-dom<br/><small>frontend/package.json</small>")
+    canvas_confetti_2d332c4d("canvas-confetti<br/><small>frontend/package.json</small>")
+    gsap_61ba4048("gsap<br/><small>frontend/package.json</small>")
+    gsap_react_d6aa198a("@gsap/react<br/><small>frontend/package.json</small>")
+    lucide_react_0d541e45("lucide-react<br/><small>frontend/package.json</small>")
+    react_6b810c90("react<br/><small>frontend/package.json</small>")
+    react_dom_1c239ab9("react-dom<br/><small>frontend/package.json</small>")
+    frontend_package_devdependencies_vite_e19d0723("vite<br/><small>frontend/package.json</small>")
+    vite_9907d3c4("vite<br/><small>frontend/package.json</small>")
+    frontend_package_devdependencies_vitejs_plugin_r_cdfa3290("@vitejs/plugin-react<br/><small>frontend/package.json</small>")
+    vitejs_plugin_react_e92d0332("@vitejs/plugin-react<br/><small>frontend/package.json</small>")
+    frontend_package_scripts_build_12dfffc4("build<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_ed599f55("dependencies<br/><small>frontend/package.json</small>")
+    frontend_package_dependencies_canvas_confetti_6e51f5af -->|imports| canvas_confetti_2d332c4d
+    frontend_package_dependencies_gsap_b08b77ed -->|imports| gsap_61ba4048
+    frontend_package_dependencies_gsap_react_f80dd55c -->|imports| gsap_react_d6aa198a
+    frontend_package_dependencies_lucide_react_68de9d29 -->|imports| lucide_react_0d541e45
+    frontend_package_dependencies_react_f565c299 -->|imports| react_6b810c90
+    frontend_package_dependencies_react_dom_eefcf95b -->|imports| react_dom_1c239ab9
+    frontend_package_devdependencies_vite_e19d0723 -->|imports| vite_9907d3c4
+    frontend_package_devdependencies_vitejs_plugin_r_cdfa3290 -->|imports| vitejs_plugin_react_e92d0332
+    %% Omitted for readability: 31 nodes, 0 edges
+    class frontend_package_dependencies_canvas_confetti_6e51f5af function;
+    class frontend_package_dependencies_gsap_b08b77ed function;
+    class frontend_package_dependencies_gsap_react_f80dd55c function;
+    class frontend_package_dependencies_lucide_react_68de9d29 function;
+    class frontend_package_dependencies_react_f565c299 function;
+    class frontend_package_dependencies_react_dom_eefcf95b function;
+    class canvas_confetti_2d332c4d function;
+    class gsap_61ba4048 function;
+    class gsap_react_d6aa198a function;
+    class lucide_react_0d541e45 function;
+    class react_6b810c90 function;
+    class react_dom_1c239ab9 function;
+    class frontend_package_devdependencies_vite_e19d0723 function;
+    class vite_9907d3c4 function;
+    class frontend_package_devdependencies_vitejs_plugin_r_cdfa3290 function;
+    class vitejs_plugin_react_e92d0332 function;
+    class frontend_package_scripts_build_12dfffc4 function;
+    class frontend_package_dependencies_ed599f55 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>package.json</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>package.json node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>dependencies</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>dependencies node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>canvas-confetti</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>canvas-confetti</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>canvas-confetti node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>gsap</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>gsap</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>gsap node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>@gsap/react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>@gsap/react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>@gsap/react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>lucide-react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>react-dom</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>react-dom</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>react-dom node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>devDependencies</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>devDependencies node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>vite</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>vite</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>vite node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>@vitejs/plugin-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>@vitejs/plugin-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>@vitejs/plugin-react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>name</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>name node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>private</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>private node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>scripts</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>scripts node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>build</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>build node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>dev</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>dev node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>preview</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>preview node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>type</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>type node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>version</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>version node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>canvas-confetti</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>canvas-confetti</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>canvas-confetti node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>gsap</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>gsap</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>gsap node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>@gsap/react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>@gsap/react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>@gsap/react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>lucide-react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>react-dom</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>react-dom</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>react-dom node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>vite</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>vite</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>vite node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>@vitejs/plugin-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>@vitejs/plugin-react</code><br><small style="color:var(--muted)">frontend/package.json</small></td>
+  <td>No direct outbound edge</td>
+  <td>@vitejs/plugin-react node in frontend/package.json.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>README.md</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing README.md.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>1. Backend Server Setup</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 1. Backend Server Setup.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>2. Frontend Client Setup</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 2. Frontend Client Setup.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>frontend/package.json</code></td><td>27 nodes</td></tr>
+<tr><td><code>README.md</code></td><td>22 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x39, imports x8. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. CLI & Skill Installers ====== -->
+<h2 id="cli-skills">4. CLI &amp; Skill Installers</h2>
+<p>CLI &amp; Skill Installers groups implementation around frontend, components, skillmd, graphify, mostly in skills/graphify/SKILL.md, frontend/src/App.jsx, src/components/DepartmentMatrix.jsx. This section covers 31 nodes and 39 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: CLI &amp; Skill Installers (31 nodes, 39 edges)
+    subgraph cli_skills_src_components_DepartmentMatrix_jsx_c84f08e7["src/components/DepartmentMatrix.jsx"]
+        frontend_src_components_departmentmatrix_departm_8887b7fb("DepartmentMatrix()<br/><small>src/components/DepartmentMatrix.jsx</small>")
+        frontend_src_components_departmentmatrix_04341a08("DepartmentMatrix.jsx")
+    end
+    subgraph cli_skills_src_components_DocumentIntelligence_j_87cd36b7["src/components/DocumentIntelligence.jsx"]
+        frontend_src_components_documentintelligence_doc_e5194abc("DocumentIntelligence()<br/><small>src/components/DocumentIntelligence.jsx</small>")
+        frontend_src_components_documentintelligence_f1c9c6e5("DocumentIntelligence.jsx")
+    end
+    subgraph cli_skills_src_components_GrievanceNavigator_jsx_ed121077["src/components/GrievanceNavigator.jsx"]
+        frontend_src_components_grievancenavigator_griev_f95257a1("GrievanceNavigator()<br/><small>src/components/GrievanceNavigator.jsx</small>")
+        frontend_src_components_grievancenavigator_84349f6f("GrievanceNavigator.jsx")
+    end
+    subgraph cli_skills_src_components_Navbar_jsx_8a9de037["src/components/Navbar.jsx"]
+        frontend_src_components_navbar_navbar_38ba0933("Navbar()<br/><small>src/components/Navbar.jsx</small>")
+        frontend_src_components_navbar_27a92f95("Navbar.jsx")
+    end
+    subgraph cli_skills_src_components_PipelineStepper_jsx_d03773be["src/components/PipelineStepper.jsx"]
+        frontend_src_components_pipelinestepper_pipeline_6a3cf7c8("PipelineStepper()<br/><small>src/components/PipelineStepper.jsx</small>")
+        frontend_src_components_pipelinestepper_bc8bd24a("PipelineStepper.jsx")
+    end
+    subgraph cli_skills_src_components_PolicyClarifier_jsx_100a4d83["src/components/PolicyClarifier.jsx"]
+        frontend_src_components_policyclarifier_policycl_447f7f3a("PolicyClarifier()<br/><small>src/components/PolicyClarifier.jsx</small>")
+        frontend_src_components_policyclarifier_1f794b83("PolicyClarifier.jsx")
+    end
+    subgraph cli_skills_src_components_StatusTracker_jsx_e3eb5edf["src/components/StatusTracker.jsx"]
+        frontend_src_components_statustracker_statustrac_2eaf830b("StatusTracker()<br/><small>src/components/StatusTracker.jsx</small>")
+        frontend_src_components_statustracker_f60c21f0("StatusTracker.jsx")
+    end
+    frontend_src_app_7da8908b("App.jsx")
+    frontend_src_main_c1980e55("main.jsx")
+    frontend_src_components_adminloginmodal_adminlog_d41148fa("AdminLoginModal()<br/><small>src/components/AdminLoginModal.jsx</small>")
+    frontend_src_components_officerdesk_officerdesk_8571d094("OfficerDesk()<br/><small>src/components/OfficerDesk.jsx</small>")
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_policyclarifier_policycl_447f7f3a
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_navbar_navbar_38ba0933
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_pipelinestepper_pipeline_6a3cf7c8
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_grievancenavigator_griev_f95257a1
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_documentintelligence_doc_e5194abc
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_statustracker_statustrac_2eaf830b
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_departmentmatrix_departm_8887b7fb
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_officerdesk_officerdesk_8571d094
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_adminloginmodal_adminlog_d41148fa
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_policyclarifier_1f794b83
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_navbar_27a92f95
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_pipelinestepper_bc8bd24a
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_grievancenavigator_84349f6f
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_documentintelligence_f1c9c6e5
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_statustracker_f60c21f0
+    frontend_src_app_7da8908b -->|imports| frontend_src_components_departmentmatrix_04341a08
+    frontend_src_main_c1980e55 -->|imports| frontend_src_app_7da8908b
+    %% Omitted for readability: 13 nodes, 0 edges
+    class frontend_src_components_departmentmatrix_departm_8887b7fb ui;
+    class frontend_src_components_departmentmatrix_04341a08 ui;
+    class frontend_src_components_documentintelligence_doc_e5194abc ui;
+    class frontend_src_components_documentintelligence_f1c9c6e5 ui;
+    class frontend_src_components_grievancenavigator_griev_f95257a1 ui;
+    class frontend_src_components_grievancenavigator_84349f6f ui;
+    class frontend_src_components_navbar_navbar_38ba0933 ui;
+    class frontend_src_components_navbar_27a92f95 ui;
+    class frontend_src_components_pipelinestepper_pipeline_6a3cf7c8 ui;
+    class frontend_src_components_pipelinestepper_bc8bd24a ui;
+    class frontend_src_components_policyclarifier_policycl_447f7f3a ui;
+    class frontend_src_components_policyclarifier_1f794b83 ui;
+    class frontend_src_components_statustracker_statustrac_2eaf830b ui;
+    class frontend_src_components_statustracker_f60c21f0 ui;
+    class frontend_src_app_7da8908b ui;
+    class frontend_src_main_c1980e55 ui;
+    class frontend_src_components_adminloginmodal_adminlog_d41148fa ui;
+    class frontend_src_components_officerdesk_officerdesk_8571d094 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>App()</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>main.jsx</code><br><small style="color:var(--muted)">frontend/src/main.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>App() node in frontend/src/App.jsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>AdminLoginModal()</code><br><small style="color:var(--muted)">src/components/AdminLoginModal.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>AdminLoginModal() node in src/components/AdminLoginModal.jsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>DepartmentMatrix()</code><br><small style="color:var(--muted)">src/components/DepartmentMatrix.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>DepartmentMatrix() node in src/components/DepartmentMatrix.jsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>DocumentIntelligence()</code><br><small style="color:var(--muted)">src/components/DocumentIntelligence.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>DocumentIntelligence() node in src/components/DocumentIntelligence.jsx.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>GrievanceNavigator()</code><br><small style="color:var(--muted)">src/components/GrievanceNavigator.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>GrievanceNavigator() node in src/components/GrievanceNavigator.jsx.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Navbar()</code><br><small style="color:var(--muted)">src/components/Navbar.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>Navbar() node in src/components/Navbar.jsx.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>OfficerDesk()</code><br><small style="color:var(--muted)">src/components/OfficerDesk.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>OfficerDesk() node in src/components/OfficerDesk.jsx.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>PipelineStepper()</code><br><small style="color:var(--muted)">src/components/PipelineStepper.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>PipelineStepper() node in src/components/PipelineStepper.jsx.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>PolicyClarifier()</code><br><small style="color:var(--muted)">src/components/PolicyClarifier.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>PolicyClarifier() node in src/components/PolicyClarifier.jsx.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>StatusTracker()</code><br><small style="color:var(--muted)">src/components/StatusTracker.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>StatusTracker() node in src/components/StatusTracker.jsx.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>main.jsx</code><br><small style="color:var(--muted)">frontend/src/main.jsx</small></td>
+  <td><code>AdminLoginModal()</code><br><small style="color:var(--muted)">src/components/AdminLoginModal.jsx</small><br><code>AdminLoginModal.jsx</code><br><small style="color:var(--muted)">src/components/AdminLoginModal.jsx</small><br><code>DepartmentMatrix()</code><br><small style="color:var(--muted)">src/components/DepartmentMatrix.jsx</small><br>+15 more</td>
+  <td>App.jsx node in frontend/src/App.jsx.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>DEFAULT_CHANDIGARH_COMPLAINTS</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DEFAULT_CHANDIGARH_COMPLAINTS node in frontend/src/App.jsx.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>AdminLoginModal.jsx</code><br><small style="color:var(--muted)">src/components/AdminLoginModal.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>AdminLoginModal.jsx node in src/components/AdminLoginModal.jsx.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>DepartmentMatrix.jsx</code><br><small style="color:var(--muted)">src/components/DepartmentMatrix.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>DepartmentMatrix.jsx node in src/components/DepartmentMatrix.jsx.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>DEFAULT_CHANDIGARH_DEPARTMENTS</code><br><small style="color:var(--muted)">src/components/DepartmentMatrix.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DEFAULT_CHANDIGARH_DEPARTMENTS node in src/components/DepartmentMatrix.jsx.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>DocumentIntelligence.jsx</code><br><small style="color:var(--muted)">src/components/DocumentIntelligence.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>DocumentIntelligence.jsx node in src/components/DocumentIntelligence.jsx.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>GrievanceNavigator.jsx</code><br><small style="color:var(--muted)">src/components/GrievanceNavigator.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>GrievanceNavigator.jsx node in src/components/GrievanceNavigator.jsx.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>Navbar.jsx</code><br><small style="color:var(--muted)">src/components/Navbar.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>Navbar.jsx node in src/components/Navbar.jsx.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>OfficerDesk.jsx</code><br><small style="color:var(--muted)">src/components/OfficerDesk.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>OfficerDesk.jsx node in src/components/OfficerDesk.jsx.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>PipelineStepper.jsx</code><br><small style="color:var(--muted)">src/components/PipelineStepper.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>PipelineStepper.jsx node in src/components/PipelineStepper.jsx.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>PolicyClarifier.jsx</code><br><small style="color:var(--muted)">src/components/PolicyClarifier.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>PolicyClarifier.jsx node in src/components/PolicyClarifier.jsx.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>StatusTracker.jsx</code><br><small style="color:var(--muted)">src/components/StatusTracker.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>StatusTracker.jsx node in src/components/StatusTracker.jsx.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>main.jsx</code><br><small style="color:var(--muted)">frontend/src/main.jsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>App()</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small><br><code>App.jsx</code><br><small style="color:var(--muted)">frontend/src/App.jsx</small><br><code>frontend_src_index</code></td>
+  <td>main.jsx node in frontend/src/main.jsx.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>frontend_src_index</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>main.jsx</code><br><small style="color:var(--muted)">frontend/src/main.jsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>frontend_src_index node in project.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>SKILL.md</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing SKILL.md.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>1. Build / Update the Knowledge Graph</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 1. Build / Update the Knowledge Graph.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>2. Query the Knowledge Graph</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 2. Query the Knowledge Graph.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>3. Generate Visualizations &amp; Reports</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 3. Generate Visualizations &amp; Reports.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>Generated Artifacts</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Generated Artifacts.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>Graphify — Codebase Knowledge Graph Skill</code><br><small style="color:var(--muted)">skills/graphify/SKILL.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Graphify — Codebase Knowledge Graph Skill.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>skills/graphify/SKILL.md</code></td><td>7 nodes</td></tr>
+<tr><td><code>frontend/src/App.jsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>src/components/DepartmentMatrix.jsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>src/components/AdminLoginModal.jsx</code></td><td>2 nodes</td></tr>
+<tr><td><code>src/components/DocumentIntelligence.jsx</code></td><td>2 nodes</td></tr>
+<tr><td><code>src/components/GrievanceNavigator.jsx</code></td><td>2 nodes</td></tr>
+<tr><td><code>src/components/Navbar.jsx</code></td><td>2 nodes</td></tr>
+<tr><td><code>src/components/OfficerDesk.jsx</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x18, imports x11, imports x10. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Ingestion & Updates ====== -->
+<h2 id="ingest-cache-update">5. Ingestion &amp; Updates</h2>
+<p>Ingestion &amp; Updates groups implementation around audio, backend, transcribe, apppy, mostly in backend/app.py, backend/services/speech.py. This section covers 4 nodes and 3 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Ingestion &amp; Updates (4 nodes, 3 edges)
+    subgraph ingest_cache_update_backend_app_py_ecc5d8a6["backend/app.py"]
+        backend_app_transcribe_audio_endpoint_c90ece50("transcribe_audio_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_rationale_165_8554438a("Stage 1: Speech-to-Text audio file tran...<br/><small>backend/app.py</small>")
+    end
+    subgraph ingest_cache_update_backend_services_speech_py_45e336b1["backend/services/speech.py"]
+        backend_services_speech_transcribe_audio_f2c2a86b("transcribe_audio()<br/><small>backend/services/speech.py</small>")
+        backend_services_speech_rationale_19_2b719220("Transcribes uploaded audio bytes (WAV,...<br/><small>backend/services/speech.py</small>")
+    end
+    backend_app_transcribe_audio_endpoint_c90ece50 -->|calls| backend_services_speech_transcribe_audio_f2c2a86b
+    class backend_app_transcribe_audio_endpoint_c90ece50 api;
+    class backend_app_rationale_165_8554438a concept;
+    class backend_services_speech_transcribe_audio_f2c2a86b function;
+    class backend_services_speech_rationale_19_2b719220 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>transcribe_audio_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>transcribe_audio()</code><br><small style="color:var(--muted)">backend/services/speech.py</small></td>
+  <td>transcribe_audio_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>transcribe_audio()</code><br><small style="color:var(--muted)">backend/services/speech.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>transcribe_audio_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>transcribe_audio() node in backend/services/speech.py.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>Stage 1: Speech-to-Text audio file transcription via Azure Speech SDK.</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 1: Speech-to-Text audio file transcription via Azure Speech SDK..</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>Transcribes uploaded audio bytes (WAV, MP3, M4A, OGG) to text. Uses Azure…</code><br><small style="color:var(--muted)">backend/services/speech.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Transcribes uploaded audio bytes (WAV, MP3, M4A, OGG) to text. Uses Azure….</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>backend/app.py</code></td><td>2 nodes</td></tr>
+<tr><td><code>backend/services/speech.py</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: explains x2, calls x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Serving API ====== -->
+<h2 id="serve-api">6. Serving API</h2>
+<p>Serving API groups implementation around backend, services, apppy, azure, mostly in backend/app.py, backend/services/filing.py, backend/services/intake.py. This section covers 102 nodes and 177 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Serving API (102 nodes, 177 edges)
+    subgraph serve_api_backend_app_py_f2034a60["backend/app.py"]
+        backend_app_7bf94404("app.py")
+        backend_app_file_complaint_endpoint_4a5c8118("file_complaint_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_admin_update_status_endpoint_58c29ad9("update status endpoint()<br/><small>backend/app.py</small>")
+        backend_app_advance_status_endpoint_f650cccc("advance_status_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_extract_d2ca6739("extract()<br/><small>backend/app.py</small>")
+        backend_app_resolve_complaint_from_request_43c7d8c5("complaint from request()<br/><small>backend/app.py</small>")
+        backend_app_get_complaint_8209775f("get_complaint()<br/><small>backend/app.py</small>")
+        backend_app_list_complaints_fbb40c59("list_complaints()<br/><small>backend/app.py</small>")
+    end
+    subgraph serve_api_backend_services_filing_py_dcf1d819["backend/services/filing.py"]
+        backend_services_filing_bded93b9("filing.py")
+        backend_services_filing_update_complaint_status_46b8020e("update_complaint_status()<br/><small>backend/services/filing.py</small>")
+        backend_services_filing_advance_complaint_status_058b746b("advance_complaint_status()<br/><small>backend/services/filing.py</small>")
+        backend_services_filing_file_complaint_4e53f54f("file_complaint()<br/><small>backend/services/filing.py</small>")
+    end
+    subgraph serve_api_backend_services_extraction_py_39114bab["backend/services/extraction.py"]
+        backend_services_extraction_7d363baa("extraction.py")
+        backend_services_extraction_extract_document_6ca4704d("extract_document()<br/><small>backend/services/extraction.py</small>")
+    end
+    subgraph serve_api_backend_services_intake_py_65b2c5bb["backend/services/intake.py"]
+        backend_services_intake_working_text_f496947f("working_text()<br/><small>backend/services/intake.py</small>")
+        backend_services_intake_get_complaint_b3574b3b("get_complaint()<br/><small>backend/services/intake.py</small>")
+    end
+    backend_e2e_test_708e3c71("e2e_test.py")
+    backend_services_policy_qa_ede18600("policy_qa.py")
+    backend_app_admin_update_status_endpoint_58c29ad9 -->|calls| backend_services_filing_update_complaint_status_46b8020e
+    backend_app_advance_status_endpoint_f650cccc -->|calls| backend_services_filing_advance_complaint_status_058b746b
+    backend_app_extract_d2ca6739 -->|calls| backend_services_extraction_extract_document_6ca4704d
+    backend_app_file_complaint_endpoint_4a5c8118 -->|calls| backend_app_resolve_complaint_from_request_43c7d8c5
+    backend_app_file_complaint_endpoint_4a5c8118 -->|calls| backend_services_intake_working_text_f496947f
+    backend_app_file_complaint_endpoint_4a5c8118 -->|calls| backend_services_filing_file_complaint_4e53f54f
+    backend_app_get_complaint_8209775f -->|calls| backend_services_intake_get_complaint_b3574b3b
+    backend_app_resolve_complaint_from_request_43c7d8c5 -->|calls| backend_services_intake_get_complaint_b3574b3b
+    backend_services_filing_advance_complaint_status_058b746b -->|calls| backend_services_filing_update_complaint_status_46b8020e
+    backend_app_7bf94404 -->|imports| backend_services_extraction_7d363baa
+    backend_app_7bf94404 -->|imports| backend_services_filing_bded93b9
+    backend_app_7bf94404 -->|imports| backend_services_policy_qa_ede18600
+    %% Omitted for readability: 84 nodes, 0 edges
+    class backend_app_7bf94404 module;
+    class backend_app_file_complaint_endpoint_4a5c8118 api;
+    class backend_app_admin_update_status_endpoint_58c29ad9 api;
+    class backend_app_advance_status_endpoint_f650cccc api;
+    class backend_app_extract_d2ca6739 function;
+    class backend_app_resolve_complaint_from_request_43c7d8c5 function;
+    class backend_app_get_complaint_8209775f function;
+    class backend_app_list_complaints_fbb40c59 function;
+    class backend_services_filing_bded93b9 module;
+    class backend_services_filing_update_complaint_status_46b8020e function;
+    class backend_services_filing_advance_complaint_status_058b746b function;
+    class backend_services_filing_file_complaint_4e53f54f function;
+    class backend_services_extraction_7d363baa module;
+    class backend_services_extraction_extract_document_6ca4704d function;
+    class backend_services_intake_working_text_f496947f function;
+    class backend_services_intake_get_complaint_b3574b3b function;
+    class backend_e2e_test_708e3c71 test;
+    class backend_services_policy_qa_ede18600 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>admin_update_status_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>update_complaint_status()</code><br><small style="color:var(--muted)">backend/services/filing.py</small></td>
+  <td>admin_update_status_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>advance_status_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>advance_complaint_status()</code><br><small style="color:var(--muted)">backend/services/filing.py</small></td>
+  <td>advance_status_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>extract()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>extract_document()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>extract() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>file_complaint_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>complaint from request()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>file_complaint()</code><br><small style="color:var(--muted)">backend/services/filing.py</small><br><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small><br>+1 more</td>
+  <td>file_complaint_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>get_complaint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>get_departments_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>get_departments_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>health_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>health_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>list_complaints()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>list_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>list_complaints() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>list_documents()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>available mock documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>list_documents() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>list_policy_samples_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>list_sample_policies()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td>list_policy_samples_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>_resolve_complaint_from_request()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>file_complaint_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>respond_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>route_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/intake.py</small><br><code>translate_text()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>_resolve_complaint_from_request() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>respond_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>complaint from request()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>mock_department_response()</code><br><small style="color:var(--muted)">backend/services/agents.py</small><br><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small><br>+1 more</td>
+  <td>respond_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>route_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>complaint from request()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small><br><code>working_text()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>route_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>translate_policy_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>translate_to_language()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>translate_policy_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>extract_document()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>extract()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>_load_documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>extract_document() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>list_available_mock_documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>list_documents()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>_load_documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>list_available_mock_documents() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>_load_documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>available mock documents()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small><br><code>extract_document()</code><br><small style="color:var(--muted)">backend/services/extraction.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>_load_documents() node in backend/services/extraction.py.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>complaint from request()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>get_complaint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>_load_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>get_complaint() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>list_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>list_complaints()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>_load_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>list_complaints() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>_load_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/intake.py</small><br><code>list_complaints()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>_load_complaints() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>translate_text()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>complaint from request()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>translate_text() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>translate_to_language()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>translate_policy_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>translate_to_language() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>working_text()</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>file_complaint_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>respond_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>route_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>working_text() node in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>list_sample_policies()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>policy samples endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>list_sample_policies() node in backend/services/policy_qa.py.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>app.py</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>__init__.py</code><br><small style="color:var(--muted)">backend/services/__init__.py</small><br><code>agents.py</code><br><small style="color:var(--muted)">backend/services/agents.py</small><br><code>extraction.py</code><br><small style="color:var(--muted)">backend/services/extraction.py</small><br>+9 more</td>
+  <td>Module file in backend/app.py.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>intake.py</code><br><small style="color:var(--muted)">backend/services/intake.py</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app.py</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>dotenv</code><br><code>json</code><br><code>os</code><br>+1 more</td>
+  <td>Module file in backend/services/intake.py.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>route</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>route node in project.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>Stage 2: document extraction (mock ID).</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 2: document extraction (mock ID)..</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>Stage 3: department routing (supports custom text or mock id).</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 3: department routing (supports custom text or mock id)..</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>Helper to resolve complaint from either an existing ID or manual custom user…</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Helper to resolve complaint from either an existing ID or manual custom user….</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>backend/app.py</code></td><td>34 nodes</td></tr>
+<tr><td><code>backend/services/filing.py</code></td><td>18 nodes</td></tr>
+<tr><td><code>backend/services/intake.py</code></td><td>11 nodes</td></tr>
+<tr><td><code>backend/services/agents.py</code></td><td>7 nodes</td></tr>
+<tr><td><code>backend/services/extraction.py</code></td><td>6 nodes</td></tr>
+<tr><td><code>backend/services/policy_qa.py</code></td><td>6 nodes</td></tr>
+<tr><td><code>backend/sync_azure.py</code></td><td>5 nodes</td></tr>
+<tr><td><code>backend/e2e_test.py</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x44, explains x39, calls x36, imports x24. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. Tests & Fixtures ====== -->
+<h2 id="tests-fixtures">7. Tests &amp; Fixtures</h2>
+<p>Tests &amp; Fixtures groups implementation around backend, services, storagepy, azure, mostly in backend/services/storage.py, backend/smoke_test.py, backend/app.py. This section covers 24 nodes and 28 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Tests &amp; Fixtures (24 nodes, 28 edges)
+    subgraph tests_fixtures_backend_services_storage_py_7e6292b0["backend/services/storage.py"]
+        backend_services_storage_advance_complaint_statu_f108b77a("advance_complaint_status()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_list_all_complaints_62824d42("list_all_complaints()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_save_complaint_3252ddcb("save_complaint()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_upload_document_blob_bf13e509("upload_document_blob()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_get_complaint_e6ba842d("get_complaint()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_get_azure_table_client_814b8452("_get_azure_table_client()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_get_azure_blob_containe_172394c2("_get_azure_blob_container()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_fc7a110a("storage.py")
+        backend_services_storage_init_local_db_c2fa6d94("_init_local_db()<br/><small>backend/services/storage.py</small>")
+        backend_services_storage_get_departments_e15233c0("get_departments()<br/><small>backend/services/storage.py</small>")
+    end
+    subgraph tests_fixtures_backend_app_py_5b0f76e2["backend/app.py"]
+        backend_app_get_policy_sample_endpoint_ca00b229("get_policy_sample_endpoint()<br/><small>backend/app.py</small>")
+        backend_app_rationale_279_d49d7f07("Returns full text of a pre-loaded scheme.<br/><small>backend/app.py</small>")
+    end
+    subgraph tests_fixtures_backend_services_policy_qa_py_4b954b01["backend/services/policy_qa.py"]
+        backend_services_policy_qa_get_sample_policy_0a9a0d28("get_sample_policy()<br/><small>backend/services/policy_qa.py</small>")
+        backend_services_policy_qa_rationale_114_f9443fe3("Retrieves full text of a pre-loaded sch...<br/><small>backend/services/policy_qa.py</small>")
+    end
+    subgraph tests_fixtures_backend_smoke_test_py_dffef4b3["backend/smoke_test.py"]
+        backend_smoke_test_6864e1c2("smoke_test.py")
+        backend_smoke_test_log_result_1329a37a("log_result()<br/><small>backend/smoke_test.py</small>")
+    end
+    requests_54faec36("requests")
+    backend_services_init_b481be4d("__init__.py")
+    backend_services_storage_advance_complaint_statu_f108b77a -->|calls| backend_services_storage_get_complaint_e6ba842d
+    backend_services_storage_advance_complaint_statu_f108b77a -->|calls| backend_services_storage_get_azure_table_client_814b8452
+    backend_services_storage_get_complaint_e6ba842d -->|calls| backend_services_storage_get_azure_table_client_814b8452
+    backend_services_storage_list_all_complaints_62824d42 -->|calls| backend_services_storage_get_azure_table_client_814b8452
+    backend_services_storage_save_complaint_3252ddcb -->|calls| backend_services_storage_get_azure_table_client_814b8452
+    backend_services_storage_upload_document_blob_bf13e509 -->|calls| backend_services_storage_get_azure_blob_containe_172394c2
+    backend_app_get_policy_sample_endpoint_ca00b229 -->|calls| backend_services_policy_qa_get_sample_policy_0a9a0d28
+    backend_smoke_test_6864e1c2 -->|imports| requests_54faec36
+    backend_smoke_test_6864e1c2 -->|imports| backend_services_init_b481be4d
+    backend_smoke_test_6864e1c2 -->|imports| backend_services_storage_fc7a110a
+    %% Omitted for readability: 6 nodes, 0 edges
+    class backend_services_storage_advance_complaint_statu_f108b77a function;
+    class backend_services_storage_list_all_complaints_62824d42 function;
+    class backend_services_storage_save_complaint_3252ddcb function;
+    class backend_services_storage_upload_document_blob_bf13e509 function;
+    class backend_services_storage_get_complaint_e6ba842d function;
+    class backend_services_storage_get_azure_table_client_814b8452 entry;
+    class backend_services_storage_get_azure_blob_containe_172394c2 function;
+    class backend_services_storage_fc7a110a module;
+    class backend_services_storage_init_local_db_c2fa6d94 function;
+    class backend_services_storage_get_departments_e15233c0 function;
+    class backend_app_get_policy_sample_endpoint_ca00b229 api;
+    class backend_app_rationale_279_d49d7f07 concept;
+    class backend_services_policy_qa_get_sample_policy_0a9a0d28 function;
+    class backend_services_policy_qa_rationale_114_f9443fe3 concept;
+    class backend_smoke_test_6864e1c2 test;
+    class backend_smoke_test_log_result_1329a37a test;
+    class requests_54faec36 function;
+    class backend_services_init_b481be4d module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>advance_complaint_status()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>_get_azure_table_client()</code><br><small style="color:var(--muted)">backend/services/storage.py</small><br><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>advance_complaint_status() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>_get_azure_blob_container()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>upload_document_blob()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>_get_azure_blob_container() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>_get_azure_table_client()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-cmd">Entry</span></td>
+  <td><code>advance_complaint_status()</code><br><small style="color:var(--muted)">backend/services/storage.py</small><br><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/storage.py</small><br><code>list_all_complaints()</code><br><small style="color:var(--muted)">backend/services/storage.py</small><br>+1 more</td>
+  <td>No direct outbound edge</td>
+  <td>_get_azure_table_client() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>get_complaint()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>advance_complaint_status()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><code>_get_azure_table_client()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>get_complaint() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>get_departments()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>get_departments() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>_init_local_db()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>_init_local_db() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>list_all_complaints()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>_get_azure_table_client()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>list_all_complaints() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>save_complaint()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>_get_azure_table_client()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>save_complaint() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>upload_document_blob()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>_get_azure_blob_container()</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td>upload_document_blob() node in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>log_result()</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>log_result() node in backend/smoke_test.py.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>__init__.py</code><br><small style="color:var(--muted)">backend/services/__init__.py</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app.py</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>smoke_test.py</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>Module file in backend/services/__init__.py.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>storage.py</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>smoke_test.py</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td><code>datetime</code><br><code>dotenv</code><br><code>json</code><br>+1 more</td>
+  <td>Module file in backend/services/storage.py.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>smoke_test.py</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>__init__.py</code><br><small style="color:var(--muted)">backend/services/__init__.py</small><br><code>dotenv</code><br><code>os</code><br>+2 more</td>
+  <td>Module file in backend/smoke_test.py.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>Azure Storage Service for JanConnect Provides durable cloud storage for: 1.…</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Azure Storage Service for JanConnect Provides durable cloud storage for: 1.….</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>Advances ticket status for demonstration: Filed -&gt; Assigned to Field Officer -&gt;…</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Advances ticket status for demonstration: Filed -&gt; Assigned to Field Officer -&gt;….</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>Uploads document attachment to Azure Blob Storage, or saves locally.</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Uploads document attachment to Azure Blob Storage, or saves locally..</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>Retrieves all municipal departments dynamically from Azure Table Storage.</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Retrieves all municipal departments dynamically from Azure Table Storage..</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>Lists all complaints filed in Azure Table Storage (ordered by creation date).</code><br><small style="color:var(--muted)">backend/services/storage.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Lists all complaints filed in Azure Table Storage (ordered by creation date)..</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>JanConnect Azure Smoke Test &amp; Diagnostic Suite Runs lightweight verification…</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for JanConnect Azure Smoke Test &amp; Diagnostic Suite Runs lightweight verification….</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>requests</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>intake.py</code><br><small style="color:var(--muted)">backend/services/intake.py</small><br><code>smoke_test.py</code><br><small style="color:var(--muted)">backend/smoke_test.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>requests node in project.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>get_policy_sample_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>get_sample_policy()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td>get_policy_sample_endpoint() node in backend/app.py.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>get_sample_policy()</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>get_policy_sample_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>get_sample_policy() node in backend/services/policy_qa.py.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>Returns full text of a pre-loaded scheme.</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Returns full text of a pre-loaded scheme..</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>Retrieves full text of a pre-loaded scheme.</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Retrieves full text of a pre-loaded scheme..</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>backend/services/storage.py</code></td><td>15 nodes</td></tr>
+<tr><td><code>backend/smoke_test.py</code></td><td>3 nodes</td></tr>
+<tr><td><code>backend/app.py</code></td><td>2 nodes</td></tr>
+<tr><td><code>backend/services/policy_qa.py</code></td><td>2 nodes</td></tr>
+<tr><td><code>backend/services/__init__.py</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x10, explains x8, calls x7, imports x2. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. 🔍 Detailed Component Walkthrough ====== -->
+<h2 id="detailed-component-walkthrough">8. 🔍 Detailed Component Walkthrough</h2>
+<p>🔍 Detailed Component Walkthrough groups implementation around project, explanationmd, backend, stage, mostly in PROJECT_EXPLANATION.md. This section covers 17 nodes and 16 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: 🔍 Detailed Component Walkthrough (17 nodes, 16 edges)
+    project_explanation_detailed_component_walkthrou_dce7cb15("🔍 Detailed Component Walkthrough<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01("JanConnect (जन कनेक्ट) — Comprehensive...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_c79ff88e("PROJECT_EXPLANATION.md")
+    project_explanation_how_to_extend_janconnect_30802e6b("🛠️ How to Extend JanConnect<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_4_stage_3_department_routing_ed9b5825("4. Stage 3: Department Routing Classifi...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_5_stage_4_grounded_specialis_a1c59e2b("5. Stage 4: Grounded Specialist Agents...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_1_flask_api_server_backend_a_a804cde2("1. Flask API Server (backend/app.py)<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_2_stage_1_multilingual_intak_5722b799("2. Stage 1: Multilingual Intake &amp; Audio...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_3_stage_2_document_intellige_3ae88348("3. Stage 2: Document Intelligence (bac...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_6_stage_5_filing_sla_trackin_9df3635a("6. Stage 5: Filing, SLA Tracking &amp; Offi...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_7_stage_6_government_policy_7f393a04("7. Stage 6: Government Policy Clarifier...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_8_frontend_user_interface_fr_13893701("8. Frontend User Interface (frontend/s...<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_adding_a_new_municipal_depar_e1ea4f30("Adding a New Municipal Department (e.g....<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_system_architecture_diagram_ae733314("🏛️ System Architecture Diagram<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_executive_summary_11f82390("📖 Executive Summary<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_security_environment_variabl_87d44799("🔒 Security &amp; Environment Variables<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_codebase_knowledge_graph_gra_3a377278("🗺️ Codebase Knowledge Graph (Graphify)<br/><small>PROJECT_EXPLANATION.md</small>")
+    project_explanation_c79ff88e -->|contains| project_explanation_janconnect_comprehensive_pro_5cdd5b01
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_4_stage_3_department_routing_ed9b5825
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_5_stage_4_grounded_specialis_a1c59e2b
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_6_stage_5_filing_sla_trackin_9df3635a
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_7_stage_6_government_policy_7f393a04
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_8_frontend_user_interface_fr_13893701
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_1_flask_api_server_backend_a_a804cde2
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_2_stage_1_multilingual_intak_5722b799
+    project_explanation_detailed_component_walkthrou_dce7cb15 -->|contains| project_explanation_3_stage_2_document_intellige_3ae88348
+    project_explanation_how_to_extend_janconnect_30802e6b -->|contains| project_explanation_adding_a_new_municipal_depar_e1ea4f30
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_security_environment_variabl_87d44799
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_system_architecture_diagram_ae733314
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_codebase_knowledge_graph_gra_3a377278
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_how_to_extend_janconnect_30802e6b
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_executive_summary_11f82390
+    project_explanation_janconnect_comprehensive_pro_5cdd5b01 -->|contains| project_explanation_detailed_component_walkthrou_dce7cb15
+    class project_explanation_detailed_component_walkthrou_dce7cb15 concept;
+    class project_explanation_janconnect_comprehensive_pro_5cdd5b01 concept;
+    class project_explanation_c79ff88e concept;
+    class project_explanation_how_to_extend_janconnect_30802e6b concept;
+    class project_explanation_4_stage_3_department_routing_ed9b5825 concept;
+    class project_explanation_5_stage_4_grounded_specialis_a1c59e2b concept;
+    class project_explanation_1_flask_api_server_backend_a_a804cde2 concept;
+    class project_explanation_2_stage_1_multilingual_intak_5722b799 concept;
+    class project_explanation_3_stage_2_document_intellige_3ae88348 concept;
+    class project_explanation_6_stage_5_filing_sla_trackin_9df3635a concept;
+    class project_explanation_7_stage_6_government_policy_7f393a04 concept;
+    class project_explanation_8_frontend_user_interface_fr_13893701 concept;
+    class project_explanation_adding_a_new_municipal_depar_e1ea4f30 concept;
+    class project_explanation_system_architecture_diagram_ae733314 concept;
+    class project_explanation_executive_summary_11f82390 concept;
+    class project_explanation_security_environment_variabl_87d44799 concept;
+    class project_explanation_codebase_knowledge_graph_gra_3a377278 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>PROJECT_EXPLANATION.md</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing PROJECT_EXPLANATION.md.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>1. Flask API Server (`backend/app.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 1. Flask API Server (`backend/app.py`).</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>2. Stage 1: Multilingual Intake &amp; Audio Transcription (`backend/services/intake.py` &amp; `speech.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 2. Stage 1: Multilingual Intake &amp; Audio Transcription (`backend/services/intake.py` &amp; `speech.py`).</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>3. Stage 2: Document Intelligence (`backend/services/extraction.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 3. Stage 2: Document Intelligence (`backend/services/extraction.py`).</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>4. Stage 3: Department Routing Classifier (`backend/services/routing.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 4. Stage 3: Department Routing Classifier (`backend/services/routing.py`).</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>5. Stage 4: Grounded Specialist Agents (`backend/services/agents.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 5. Stage 4: Grounded Specialist Agents (`backend/services/agents.py`).</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>6. Stage 5: Filing, SLA Tracking &amp; Officer Desk (`backend/services/filing.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 6. Stage 5: Filing, SLA Tracking &amp; Officer Desk (`backend/services/filing.py`).</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>7. Stage 6: Government Policy Clarifier &amp; Multilingual Q&amp;A (`backend/services/policy_qa.py` &amp; `intake.py`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 7. Stage 6: Government Policy Clarifier &amp; Multilingual Q&amp;A (`backend/services/policy_qa.py` &amp; `intake.py`).</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>8. Frontend User Interface (`frontend/src/App.jsx` &amp; `index.css`)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 8. Frontend User Interface (`frontend/src/App.jsx` &amp; `index.css`).</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Adding a New Municipal Department (e.g., Sanitation / Roads):</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Adding a New Municipal Department (e.g., Sanitation / Roads):.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>🗺️ Codebase Knowledge Graph (Graphify)</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🗺️ Codebase Knowledge Graph (Graphify).</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>🔍 Detailed Component Walkthrough</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🔍 Detailed Component Walkthrough.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>📖 Executive Summary</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 📖 Executive Summary.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>🛠️ How to Extend JanConnect</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🛠️ How to Extend JanConnect.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>JanConnect (जन कनेक्ट) — Comprehensive Project Architecture &amp; Technical Guide</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing JanConnect (जन कनेक्ट) — Comprehensive Project Architecture &amp; Technical Guide.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>🔒 Security &amp; Environment Variables</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🔒 Security &amp; Environment Variables.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>🏛️ System Architecture Diagram</code><br><small style="color:var(--muted)">PROJECT_EXPLANATION.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🏛️ System Architecture Diagram.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>PROJECT_EXPLANATION.md</code></td><td>17 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x16. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. routing.py ====== -->
+<h2 id="routing-py">9. routing.py</h2>
+<p>routing.py groups implementation around routingpy, backend, services, chandigarh, mostly in backend/services/routing.py. This section covers 11 nodes and 13 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: routing.py (11 nodes, 13 edges)
+    subgraph routing_py_backend_services_routing_py_39d0195d["backend/services/routing.py"]
+        backend_services_routing_route_complaint_1435391f("route_complaint()<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_e267bd98("routing.py")
+        backend_services_routing_load_departments_4f6c1dbd("_load_departments()<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_detect_chandigarh_secto_c5ba9a13("detect_chandigarh_sector()<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_keyword_matches_a5e1f836("_keyword_matches()<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_rationale_68_01afa5f5("Accurate keyword matching with word bou...<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_rationale_47_4cf17a0c("Extracts mentioned Chandigarh sector or...<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_rationale_41_c9ce6a72("Loads department metadata from JSON (or...<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_rationale_76_75bfc677("Returns the best-matching department id...<br/><small>backend/services/routing.py</small>")
+        backend_services_routing_rationale_1_76b7abdd("Stage 3: Department Routing &amp; Chandigar...<br/><small>backend/services/routing.py</small>")
+    end
+    re_c387c982("re")
+    backend_services_routing_route_complaint_1435391f -->|calls| backend_services_routing_load_departments_4f6c1dbd
+    backend_services_routing_route_complaint_1435391f -->|calls| backend_services_routing_detect_chandigarh_secto_c5ba9a13
+    backend_services_routing_route_complaint_1435391f -->|calls| backend_services_routing_keyword_matches_a5e1f836
+    backend_services_routing_e267bd98 -->|imports| re_c387c982
+    class backend_services_routing_route_complaint_1435391f api;
+    class backend_services_routing_e267bd98 module;
+    class backend_services_routing_load_departments_4f6c1dbd function;
+    class backend_services_routing_detect_chandigarh_secto_c5ba9a13 function;
+    class backend_services_routing_keyword_matches_a5e1f836 function;
+    class backend_services_routing_rationale_68_01afa5f5 concept;
+    class backend_services_routing_rationale_47_4cf17a0c concept;
+    class backend_services_routing_rationale_41_c9ce6a72 concept;
+    class backend_services_routing_rationale_76_75bfc677 concept;
+    class backend_services_routing_rationale_1_76b7abdd concept;
+    class re_c387c982 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>detect_chandigarh_sector()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>detect_chandigarh_sector() node in backend/services/routing.py.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>_keyword_matches()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>_keyword_matches() node in backend/services/routing.py.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>_load_departments()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>_load_departments() node in backend/services/routing.py.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>route_complaint()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td><code>file_complaint_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>respond_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small><br><code>route_endpoint()</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>_keyword_matches()</code><br><small style="color:var(--muted)">backend/services/routing.py</small><br><code>_load_departments()</code><br><small style="color:var(--muted)">backend/services/routing.py</small><br><code>detect_chandigarh_sector()</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td>route_complaint() node in backend/services/routing.py.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>routing.py</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>app.py</code><br><small style="color:var(--muted)">backend/app.py</small></td>
+  <td><code>json</code><br><code>os</code><br><code>re</code></td>
+  <td>Module file in backend/services/routing.py.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Stage 3: Department Routing &amp; Chandigarh Sector Detection This module performs:…</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Stage 3: Department Routing &amp; Chandigarh Sector Detection This module performs:….</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>Loads department metadata from JSON (or storage).</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Loads department metadata from JSON (or storage)..</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>Extracts mentioned Chandigarh sector or area from grievance text.</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Extracts mentioned Chandigarh sector or area from grievance text..</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Accurate keyword matching with word boundaries for short words to avoid…</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Accurate keyword matching with word boundaries for short words to avoid….</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Returns the best-matching department id + name + score, along with any detected…</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Design note for Returns the best-matching department id + name + score, along with any detected….</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>re</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>extraction.py</code><br><small style="color:var(--muted)">backend/services/extraction.py</small><br><code>policy_qa.py</code><br><small style="color:var(--muted)">backend/services/policy_qa.py</small><br><code>routing.py</code><br><small style="color:var(--muted)">backend/services/routing.py</small></td>
+  <td>No direct outbound edge</td>
+  <td>re node in project.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>backend/services/routing.py</code></td><td>10 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: explains x5, contains x4, calls x3, imports x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. AGENTS.md — JanConnect Project Guide for AI Agents ====== -->
+<h2 id="agents-md-janconnect-project-guide-for-ai-agents">10. AGENTS.md — JanConnect Project Guide for AI Agents</h2>
+<p>AGENTS.md — JanConnect Project Guide for AI Agents groups implementation around agentsmd, project, backend, architecture, mostly in AGENTS.md. This section covers 10 nodes and 9 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: AGENTS.md — JanConnect Project Guide for AI Agents (10 nodes, 9 edges)
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3("AGENTS.md — JanConnect Project Guide fo...<br/><small>AGENTS.md</small>")
+    agents_e7052aeb("AGENTS.md")
+    agents_1_project_overview_13bfe3d0("1. Project Overview<br/><small>AGENTS.md</small>")
+    agents_core_architecture_5_stage_agentic_pipelin_b1a55658("Core Architecture: 5-Stage Agentic Pipe...<br/><small>AGENTS.md</small>")
+    agents_5_knowledge_graph_navigation_graphify_c70b6b68("5. Knowledge Graph &amp; Navigation (Graphify)<br/><small>AGENTS.md</small>")
+    agents_6_how_to_run_verify_96e910cd("6. How to Run &amp; Verify<br/><small>AGENTS.md</small>")
+    agents_2_directory_structure_e0e5f790("2. Directory Structure<br/><small>AGENTS.md</small>")
+    agents_3_backend_api_endpoints_backend_app_py_00fc54d4("3. Backend API Endpoints (backend/app....<br/><small>AGENTS.md</small>")
+    agents_4_live_cloud_services_fallback_architectu_99f589c5("4. Live Cloud Services &amp; Fallback Archi...<br/><small>AGENTS.md</small>")
+    agents_7_guidelines_for_modifying_code_f4780bf6("7. Guidelines for Modifying Code<br/><small>AGENTS.md</small>")
+    agents_e7052aeb -->|contains| agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3
+    agents_1_project_overview_13bfe3d0 -->|contains| agents_core_architecture_5_stage_agentic_pipelin_b1a55658
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_5_knowledge_graph_navigation_graphify_c70b6b68
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_6_how_to_run_verify_96e910cd
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_7_guidelines_for_modifying_code_f4780bf6
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_2_directory_structure_e0e5f790
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_3_backend_api_endpoints_backend_app_py_00fc54d4
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_1_project_overview_13bfe3d0
+    agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 -->|contains| agents_4_live_cloud_services_fallback_architectu_99f589c5
+    class agents_agents_md_janconnect_project_guide_for_ai_bd6b78a3 concept;
+    class agents_e7052aeb concept;
+    class agents_1_project_overview_13bfe3d0 concept;
+    class agents_core_architecture_5_stage_agentic_pipelin_b1a55658 concept;
+    class agents_5_knowledge_graph_navigation_graphify_c70b6b68 concept;
+    class agents_6_how_to_run_verify_96e910cd concept;
+    class agents_2_directory_structure_e0e5f790 concept;
+    class agents_3_backend_api_endpoints_backend_app_py_00fc54d4 concept;
+    class agents_4_live_cloud_services_fallback_architectu_99f589c5 concept;
+    class agents_7_guidelines_for_modifying_code_f4780bf6 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>AGENTS.md</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing AGENTS.md.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>1. Project Overview</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 1. Project Overview.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>2. Directory Structure</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 2. Directory Structure.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>3. Backend API Endpoints (`backend/app.py`)</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 3. Backend API Endpoints (`backend/app.py`).</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>4. Live Cloud Services &amp; Fallback Architecture</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 4. Live Cloud Services &amp; Fallback Architecture.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>5. Knowledge Graph &amp; Navigation (Graphify)</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 5. Knowledge Graph &amp; Navigation (Graphify).</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>6. How to Run &amp; Verify</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 6. How to Run &amp; Verify.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>7. Guidelines for Modifying Code</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 7. Guidelines for Modifying Code.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>AGENTS.md — JanConnect Project Guide for AI Agents</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing AGENTS.md — JanConnect Project Guide for AI Agents.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Core Architecture: 5-Stage Agentic Pipeline</code><br><small style="color:var(--muted)">AGENTS.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Core Architecture: 5-Stage Agentic Pipeline.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>AGENTS.md</code></td><td>10 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x9. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 11. rules/graphify.md ====== -->
+<h2 id="rules-graphify-md">11. rules/graphify.md</h2>
+<p>rules/graphify.md groups implementation around rules, graphifymd, agents, graphify, mostly in .agents/rules/graphify.md. This section covers 2 nodes and 1 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: rules/graphify.md (2 nodes, 1 edges)
+    agents_rules_graphify_8193478b("rules/graphify.md")
+    agents_rules_graphify_graphify_dd1d4f66("graphify<br/><small>.agents/rules/graphify.md</small>")
+    agents_rules_graphify_8193478b -->|contains| agents_rules_graphify_graphify_dd1d4f66
+    class agents_rules_graphify_8193478b concept;
+    class agents_rules_graphify_graphify_dd1d4f66 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>rules/graphify.md</code><br><small style="color:var(--muted)">.agents/rules/graphify.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing rules/graphify.md.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>graphify</code><br><small style="color:var(--muted)">.agents/rules/graphify.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing graphify.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>.agents/rules/graphify.md</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 12. workflows/graphify.md ====== -->
+<h2 id="workflows-graphify-md">12. workflows/graphify.md</h2>
+<p>workflows/graphify.md groups implementation around workflows, graphifymd, agents, workflow, mostly in .agents/workflows/graphify.md. This section covers 2 nodes and 1 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: workflows/graphify.md (2 nodes, 1 edges)
+    agents_workflows_graphify_08a1cc26("workflows/graphify.md")
+    agents_workflows_graphify_workflow_graphify_87f5fa2b("Workflow: graphify<br/><small>.agents/workflows/graphify.md</small>")
+    agents_workflows_graphify_08a1cc26 -->|contains| agents_workflows_graphify_workflow_graphify_87f5fa2b
+    class agents_workflows_graphify_08a1cc26 concept;
+    class agents_workflows_graphify_workflow_graphify_87f5fa2b concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>workflows/graphify.md</code><br><small style="color:var(--muted)">.agents/workflows/graphify.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing workflows/graphify.md.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>Workflow: graphify</code><br><small style="color:var(--muted)">.agents/workflows/graphify.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing Workflow: graphify.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>.agents/workflows/graphify.md</code></td><td>2 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 13. vite.config.js ====== -->
+<h2 id="vite-config-js">13. vite.config.js</h2>
+<p>vite.config.js groups implementation around viteconfigjs, frontend, mostly in frontend/vite.config.js. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: vite.config.js (1 nodes, 0 edges)
+    frontend_vite_config_3ac59d22("vite.config.js")
+    class frontend_vite_config_3ac59d22 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>vite.config.js</code><br><small style="color:var(--muted)">frontend/vite.config.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>frontend/vite.config.js</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>269</td></tr>
+      <tr><td>Edges</td><td>382</td></tr>
+      <tr><td>Hyperedges</td><td>0</td></tr>
+      <tr><td>Communities</td><td>19</td></tr>
+      <tr><td>Documented Sections</td><td>12</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>382</td></tr>
+      <tr><td>INFERRED</td><td>0</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>JanConnect — Architecture Documentation</p>
+  <p>Generated: 2026-09-22 20:15 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

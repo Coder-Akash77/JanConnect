@@ -1,0 +1,39 @@
+[
+  {
+    "id": "complaint_1",
+    "language": "en",
+    "sector": "Sector 22-B",
+    "raw_text": "I received an inflated water bill of Rs. 4,850 for House No 1240, Sector 22-B via e-Sampark. Last month our bill was only Rs. 650. The smart water meter reading appears to be running erratically.",
+    "citizen_name": "Virender Sharma"
+  },
+  {
+    "id": "complaint_2",
+    "language": "hi",
+    "sector": "Sector 35-C",
+    "raw_text": "Sector 35-C ke inner park aur V4 road ki street lights pichhle 5 din se band hain, raat ko pura andhera rehta hai aur chori ka darr hai.",
+    "translated_text": "The street lights in the inner park and V4 road of Sector 35-C have been off for the last 5 days, it remains pitch dark at night with fear of theft.",
+    "citizen_name": "Sunita Aggarwal"
+  },
+  {
+    "id": "complaint_3",
+    "language": "pa",
+    "sector": "Sector 13 (Manimajra)",
+    "raw_text": "Manimajra sub-division vich pichhle 4 ghante to bijli band hai. 19121 helpline te koi phone nahi chuk reha, kripya local transformer check karvao.",
+    "translated_text": "Electricity has been out in Manimajra sub-division for the last 4 hours. No one is picking up on the 19121 helpline, please get the local transformer checked.",
+    "citizen_name": "Gurpreet Singh Sandhu"
+  },
+  {
+    "id": "complaint_4",
+    "language": "en",
+    "sector": "Sector 46-D",
+    "raw_text": "The MCC door-to-door waste collection tipper vehicle has missed Sector 46-D for two days straight. Household waste is piling up outside houses.",
+    "citizen_name": "Deepak Mehta"
+  },
+  {
+    "id": "complaint_5",
+    "language": "en",
+    "sector": "Sector 19-C",
+    "raw_text": "A dangerous deep pothole has formed near the Sector 19 market roundabout following recent rains, causing frequent two-wheeler accidents.",
+    "citizen_name": "Pooja Verma"
+  }
+]
