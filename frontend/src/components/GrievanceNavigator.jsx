@@ -1,33 +1,270 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import confetti from "canvas-confetti";
 import {
-  Sparkles,
-  Droplets,
-  Zap,
-  Trash2,
-  Construction,
-  ShieldCheck,
-  Clock,
-  MapPin,
   Mic,
   Send,
+  AlertCircle,
+  FileText,
+  Search,
+  ShieldCheck,
   CheckCircle2,
+  Clock,
   Copy,
   Check,
-  ExternalLink,
-  Search,
-  AlertCircle,
-  FileCheck,
-  Building,
-  HelpCircle,
+  ArrowRight,
+  RotateCcw,
+  Square,
+  User,
+  MapPin,
+  Phone,
+  FileEdit,
 } from "lucide-react";
 
+const UI_TEXT = {
+  en: {
+    heroTitle: "How can we help you?",
+    heroSubtitle: "Tell us your problem. We'll guide you to the right place.",
+    inputPlaceholder: "Type or speak your problem...",
+    actionReportTitle: "Report a Problem",
+    actionReportDesc: "Tell us your issue",
+    actionDocTitle: "Understand a Document",
+    actionDocDesc: "Upload a bill or notice",
+    actionTrackTitle: "Track a Complaint",
+    actionTrackDesc: "Check your complaint status",
+    listening: "Listening live...",
+    recordingAudio: "Recording speech",
+    clickToStop: "Click mic to stop",
+    send: "Send",
+    fileTicket: "Proceed to File Grievance",
+    filing: "Registering official complaint...",
+    analyzing: "Finding the right department & guidance...",
+    askAnother: "Ask another question",
+    assignedAuthority: "Assigned Municipal Authority",
+    resolutionSla: "Right to Service SLA",
+    authority: "Authority",
+    helpline: "Helpline",
+    legalAdviceTitle: "Legal & Redressal Advice",
+    officiallyFiled: "Grievance Officially Filed",
+    copy: "Copy",
+    copied: "Copied",
+    department: "Department",
+    targetResolution: "Target Resolution",
+    targetDate: "Target Date",
+    trackStatusBtn: "Track Complaint Status",
+    promptLang: "Supports Hindi, Punjabi, and English",
+    // Step 3: Citizen Details
+    detailsTitle: "Citizen Contact & Location Details",
+    detailsSubtitle: "Please provide your details so municipal officers can inspect and resolve your issue.",
+    nameLabel: "Citizen Full Name",
+    namePlaceholder: "e.g. Virender Sharma",
+    addressLabel: "Relevant Location / Address in Chandigarh",
+    addressPlaceholder: "e.g. House No. 1240, Sector 22-B, Chandigarh",
+    phoneLabel: "Contact Phone (Optional)",
+    phonePlaceholder: "e.g. 98765-43210",
+    reviewBtn: "Review & Confirm",
+    backToGuidance: "Back to Guidance",
+    nameRequiredError: "Please enter your full name and relevant location/address.",
+    // Step 4: Confirmation
+    confirmTitle: "Confirm Grievance Details",
+    confirmSubtitle: "Please review the summary below before registering your official complaint.",
+    citizenSummary: "Citizen Name",
+    locationSummary: "Location / Address",
+    phoneSummary: "Phone Number",
+    deptSummary: "Assigned Department",
+    slaSummary: "Mandatory SLA",
+    problemSummary: "Grievance Description",
+    confirmAndFileBtn: "Confirm & File Official Complaint",
+    editDetailsBtn: "Edit Details",
+  },
+  hi: {
+    heroTitle: "हम आपकी क्या सहायता कर सकते हैं?",
+    heroSubtitle: "अपनी समस्या बताएं। हम आपको सही विभाग तक पहुंचाएंगे।",
+    inputPlaceholder: "अपनी समस्या लिखें या बोलें...",
+    actionReportTitle: "समस्या दर्ज करें",
+    actionReportDesc: "अपनी समस्या बताएं",
+    actionDocTitle: "दस्तावेज़ समझें",
+    actionDocDesc: "बिल या नोटिस अपलोड करें",
+    actionTrackTitle: "शिकायत ट्रैक करें",
+    actionTrackDesc: "अपनी शिकायत की स्थिति जांचें",
+    listening: "सुन रहे हैं... बोलिए",
+    recordingAudio: "आवाज रिकॉर्ड हो रही है",
+    clickToStop: "रोकने के लिए माइक पर क्लिक करें",
+    send: "भेजें",
+    fileTicket: "शिकायत दर्ज करने के लिए आगे बढ़ें",
+    filing: "शिकायत दर्ज की जा रही है...",
+    analyzing: "उचित विभाग एवं नियम जांचे जा रहे हैं...",
+    askAnother: "दूसरी समस्या बताएं",
+    assignedAuthority: "संबंधित नगर निगम प्राधिकरण",
+    resolutionSla: "सेवा का अधिकार समय-सीमा (SLA)",
+    authority: "प्राधिकरण",
+    helpline: "हेल्पलाइन",
+    legalAdviceTitle: "कानूनी एवं निवारण प्रक्रिया",
+    officiallyFiled: "शिकायत आधिकारिक तौर पर दर्ज हुई",
+    copy: "कॉपी",
+    copied: "कॉपी हुआ",
+    department: "विभाग",
+    targetResolution: "निवारण समय",
+    targetDate: "अंतिम तिथि",
+    trackStatusBtn: "शिकायत की स्थिति ट्रैक करें",
+    promptLang: "हिंदी, पंजाबी या अंग्रेजी में बोलें या लिखें",
+    // Step 3: Citizen Details
+    detailsTitle: "नागरिक विवरण एवं समस्या का स्थान",
+    detailsSubtitle: "कृपया अपना विवरण दर्ज करें ताकि संबंधित अधिकारी स्थल पर आकर समस्या का समाधान कर सकें।",
+    nameLabel: "नागरिक का पूरा नाम",
+    namePlaceholder: "उदा. वीरेंद्र शर्मा",
+    addressLabel: "स्थान / पता (चंडीगढ़)",
+    addressPlaceholder: "उदा. मकान नं. 1240, सेक्टर 22-बी, चंडीगढ़",
+    phoneLabel: "मोबाइल नंबर (वैकल्पिक)",
+    phonePlaceholder: "उदा. 98765-43210",
+    reviewBtn: "विवरण की पुष्टि करें",
+    backToGuidance: "वापस जाएं",
+    nameRequiredError: "कृपया अपना नाम और समस्या का स्थान/पता अवश्य भरें।",
+    // Step 4: Confirmation
+    confirmTitle: "शिकायत विवरण की पुष्टि करें",
+    confirmSubtitle: "आधिकारिक शिकायत दर्ज करने से पहले कृपया नीचे दी गई जानकारी की जांच कर लें।",
+    citizenSummary: "नागरिक का नाम",
+    locationSummary: "स्थान / पता",
+    phoneSummary: "मोबाइल नंबर",
+    deptSummary: "संबंधित विभाग",
+    slaSummary: "कानूनी समय-सीमा (SLA)",
+    problemSummary: "शिकायत का विवरण",
+    confirmAndFileBtn: "पुष्टि करें और शिकायत दर्ज करें",
+    editDetailsBtn: "विवरण बदलें",
+  },
+  pa: {
+    heroTitle: "ਅਸੀਂ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦੇ ਹਾਂ?",
+    heroSubtitle: "ਆਪਣੀ ਸਮੱਸਿਆ ਦੱਸੋ। ਅਸੀਂ ਤੁਹਾਨੂੰ ਸਹੀ ਵਿਭਾਗ ਤੱਕ ਪਹੁੰਚਾਵਾਂਗੇ।",
+    inputPlaceholder: "ਆਪਣੀ ਸਮੱਸਿਆ ਲਿਖੋ ਜਾਂ ਬੋਲੋ...",
+    actionReportTitle: "ਸਮੱਸਿਆ ਦਰਜ ਕਰੋ",
+    actionReportDesc: "ਆਪਣੀ ਸਮੱਸਿਆ ਦੱਸੋ",
+    actionDocTitle: "ਦਸਤਾਵੇਜ਼ ਸਮਝੋ",
+    actionDocDesc: "ਬਿੱਲ ਜਾਂ ਨੋਟਿਸ ਅਪਲੋਡ ਕਰੋ",
+    actionTrackTitle: "ਸ਼ਿਕਾਇਤ ਟਰੈਕ ਕਰੋ",
+    actionTrackDesc: "ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਸਥਿਤੀ ਦੇਖੋ",
+    listening: "ਸੁਣ ਰਹੇ ਹਾਂ... ਬੋਲੋ",
+    recordingAudio: "ਆਵਾਜ਼ ਰਿਕਾਰਡ ਹੋ ਰਹੀ ਹੈ",
+    clickToStop: "ਰੋਕਣ ਲਈ ਮਾਈਕ 'ਤੇ ਕਲਿੱਕ ਕਰੋ",
+    send: "ਭੇਜੋ",
+    fileTicket: "ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਨ ਲਈ ਅੱਗੇ ਵਧੋ",
+    filing: "ਸ਼ਿਕਾਇਤ ਦਰਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...",
+    analyzing: "ਸਹੀ ਵਿਭਾਗ ਤੇ ਨਿਯਮ ਲੱਭੇ ਜਾ ਰਹੇ ਹਨ...",
+    askAnother: "ਹੋਰ ਸਮੱਸਿਆ ਪੁੱਛੋ",
+    assignedAuthority: "ਸਬੰਧਤ ਨਗਰ ਨਿਗਮ ਅਧਿਕਾਰੀ",
+    resolutionSla: "ਸੇਵਾ ਦਾ ਅਧਿਕਾਰ ਸਮਾਂ-ਸੀਮਾ (SLA)",
+    authority: "ਅਥਾਰਟੀ",
+    helpline: "ਹੈਲਪਲਾਈਨ",
+    legalAdviceTitle: "ਕਾਨੂੰਨੀ ਅਤੇ ਨਿਪਟਾਰਾ ਕਾਰਵਾਈ",
+    officiallyFiled: "ਸ਼ਿਕਾਇਤ ਅਧਿਕਾਰਤ ਤੌਰ 'ਤੇ ਦਰਜ ਹੋਈ",
+    copy: "ਕਾਪੀ",
+    copied: "ਕਾਪੀ ਹੋਇਆ",
+    department: "ਵਿਭਾਗ",
+    targetResolution: "ਨਿਪਟਾਰਾ ਸਮਾਂ",
+    targetDate: "ਆਖਰੀ ਮਿਤੀ",
+    trackStatusBtn: "ਸ਼ਿਕਾਇਤ ਦੀ ਸਥਿਤੀ ਟਰੈਕ ਕਰੋ",
+    promptLang: "ਪੰਜਾਬੀ, ਹਿੰਦੀ ਜਾਂ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਬੋਲੋ ਜਾਂ ਲਿਖੋ",
+    // Step 3: Citizen Details
+    detailsTitle: "ਨਾਗਰਿਕ ਵੇਰਵੇ ਅਤੇ ਸਮੱਸਿਆ ਵਾਲੀ ਥਾਂ",
+    detailsSubtitle: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਵੇਰਵੇ ਦਿਓ ਤਾਂ ਜੋ ਸਬੰਧਤ ਅਧਿਕਾਰੀ ਮੌਕੇ 'ਤੇ ਜਾਂਚ ਕਰਕੇ ਹੱਲ ਕਰ ਸਕਣ।",
+    nameLabel: "ਨਾਗਰਿਕ ਦਾ ਪੂਰਾ ਨਾਮ",
+    namePlaceholder: "ਜਿਵੇਂ ਕਿ ਵਰਿੰਦਰ ਸ਼ਰਮਾ",
+    addressLabel: "ਸਮੱਸਿਆ ਵਾਲਾ ਪਤਾ / ਸੈਕਟਰ (ਚੰਡੀਗੜ੍ਹ)",
+    addressPlaceholder: "ਜਿਵੇਂ ਕਿ ਮਕਾਨ ਨੰ. 1240, ਸੈਕਟਰ 22-ਬੀ, ਚੰਡੀਗੜ੍ਹ",
+    phoneLabel: "ਮੋਬਾਈਲ ਨੰਬਰ (ਵਿਕਲਪਿਕ)",
+    phonePlaceholder: "ਜਿਵੇਂ ਕਿ 98765-43210",
+    reviewBtn: "ਵੇਰਵਿਆਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+    backToGuidance: "ਪਿੱਛੇ ਜਾਓ",
+    nameRequiredError: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਨਾਮ ਅਤੇ ਸਮੱਸਿਆ ਦਾ ਪਤਾ ਜ਼ਰੂਰ ਭਰੋ।",
+    // Step 4: Confirmation
+    confirmTitle: "ਸ਼ਿਕਾਇਤ ਵੇਰਵਿਆਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+    confirmSubtitle: "ਅਧਿਕਾਰਤ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਹੇਠਾਂ ਦਿੱਤੀ ਜਾਣਕਾਰੀ ਦੀ ਜਾਂਚ ਕਰ ਲਓ।",
+    citizenSummary: "ਨਾਗਰਿਕ ਦਾ ਨਾਮ",
+    locationSummary: "ਸਥਾਨ / ਪਤਾ",
+    phoneSummary: "ਮੋਬਾਈਲ ਨੰਬਰ",
+    deptSummary: "ਸਬੰਧਤ ਵਿਭਾਗ",
+    slaSummary: "ਕਾਨੂੰਨੀ ਸਮਾਂ-ਸੀਮਾ (SLA)",
+    problemSummary: "ਸ਼ਿਕਾਇਤ ਦਾ ਵੇਰਵਾ",
+    confirmAndFileBtn: "ਪੁਸ਼ਟੀ ਕਰੋ ਅਤੇ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ",
+    editDetailsBtn: "ਵੇਰਵੇ ਬਦਲੋ",
+  },
+};
+
+const LOCALIZED_ADVICE = {
+  water: {
+    hi: {
+      name: "नगर निगम चंडीगढ़ (जल आपूर्ति एवं सीवरेज विंग)",
+      advice: "जल आपूर्ति एवं मीटर संबंधी आधिकारिक प्रक्रिया:\n• आपकी शिकायत को नगर निगम चंडीगढ़ के जल आपूर्ति उप-प्रभाग में दर्ज किया जाएगा।\n• पंजाब सेवा का अधिकार अधिनियम 2011 के तहत मीटर निरीक्षण एवं बिल सुधार की समय-सीमा 7 कार्य दिवस है।\n• सहायता एवं पूछताछ: टोल-फ्री 0172-2540200 या किसी भी ई-संपर्क केंद्र पर संपर्क करें।",
+    },
+    pa: {
+      name: "ਮਿਊਂਸੀਪਲ ਕਾਰਪੋਰੇਸ਼ਨ ਚੰਡੀਗੜ੍ਹ (ਜਲ ਸਪਲਾਈ ਅਤੇ ਸੀਵਰੇਜ ਵਿੰਗ)",
+      advice: "ਜਲ ਸਪਲਾਈ ਅਤੇ ਮੀਟਰ ਸੰਬੰਧੀ ਅਧਿਕਾਰਤ ਕਾਰਵਾਈ:\n• ਤੁਹਾਡੀ ਸ਼ਿਕਾਇਤ ਨਗਰ ਨਿਗਮ ਚੰਡੀਗੜ੍ਹ ਦੇ ਸਬੰਧਤ ਉਪ-ਮੰਡਲ ਵਿੱਚ ਦਰਜ ਕੀਤੀ ਜਾਵੇਗੀ।\n• ਪੰਜਾਬ ਰਾਈਟ ਟੂ ਸਰਵਿਸ ਐਕਟ 2011 ਅਧੀਨ ਮੀਟਰ ਜਾਂਚ ਅਤੇ ਬਿੱਲ ਸੁਧਾਰ ਦੀ ਸਮਾਂ-ਸੀਮਾ 7 ਕੰਮਕਾਜੀ ਦਿਨ ਹੈ।\n• ਸਹਾਇਤਾ ਲਈ ਹੈਲਪਲਾਈਨ: 0172-2540200 ਜਾਂ ਈ-ਸੰਪਰਕ ਕੇਂਦਰ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।",
+    },
+  },
+  electricity: {
+    hi: {
+      name: "चंडीगढ़ बिजली वितरण लिमिटेड (CPDL)",
+      advice: "बिजली आपूर्ति एवं ट्रांसफार्मर संबंधी आधिकारिक प्रक्रिया:\n• यह शिकायत सीधे संबंधित सब-डिवीजनल ट्रांसफार्मर टीम को भेजी जाएगी।\n• बिजली गुल रहने पर 19121 पर तत्काल फॉल्ट रेजोल्यूशन अनिवार्य है।\n• आपातकालीन हेल्पलाइन: 19121 (24x7 टोल-फ्री)।",
+    },
+    pa: {
+      name: "ਚੰਡੀਗੜ੍ਹ ਬਿਜਲੀ ਵੰਡ ਲਿਮਿਟੇਡ (CPDL)",
+      advice: "ਬਿਜਲੀ ਸਪਲਾਈ ਅਤੇ ਟਰਾਂਸਫਾਰਮਰ ਸੰਬੰਧੀ ਕਾਰਵਾਈ:\n• ਸ਼ਿਕਾਇਤ ਸਬੰਧਤ ਸਬ-ਡਵੀਜ਼ਨ ਟਰਾਂਸਫਾਰਮਰ ਟੀਮ ਨੂੰ ਭੇਜੀ ਜਾਵੇਗੀ।\n• ਬਿਜਲੀ ਕੱਟ ਜਾਂ ਨੁਕਸ ਲਈ 19121 'ਤੇ ਤੁਰੰਤ ਕਾਰਵਾਈ ਲਾਜ਼ਮੀ ਹੈ।\n• ਐਮਰਜੈਂਸੀ ਹੈਲਪਲਾਈਨ: 19121 (24x7 ਟੋਲ-ਫ੍ਰੀ)।",
+    },
+  },
+  roads: {
+    hi: {
+      name: "नगर निगम चंडीगढ़ (सड़क एवं स्ट्रीट लाइट विंग - B&R)",
+      advice: "सड़क मरम्मत एवं स्ट्रीट लाइट संबंधी आधिकारिक प्रक्रिया:\n• बंद स्ट्रीट लाइट एवं गड्ढों की मरम्मत 3 से 7 कार्य दिवसों में पूरी की जाती है।\n• आधिकारिक सहायता: 0172-2787200 / ई-संपर्क 1800-180-1725।",
+    },
+    pa: {
+      name: "ਮਿਊਂਸੀਪਲ ਕਾਰਪੋਰੇਸ਼ਨ (ਸੜਕਾਂ ਅਤੇ ਸਟ੍ਰੀਟ ਲਾਈਟਾਂ ਵਿੰਗ - B&R)",
+      advice: "ਸੜਕ ਮੁਰੰਮਤ ਅਤੇ ਸਟ੍ਰੀਟ ਲਾਈਟ ਸੰਬੰਧੀ ਕਾਰਵਾਈ:\n• ਬੰਦ ਸਟ੍ਰੀਟ ਲਾਈਟਾਂ ਅਤੇ ਖੱਡੇ 3 ਤੋਂ 7 ਕੰਮਕਾਜੀ ਦਿਨਾਂ ਵਿੱਚ ਠੀਕ ਕੀਤੇ ਜਾਂਦੇ ਹਨ।\n• ਅਧਿਕਾਰਤ ਹੈਲਪਲਾਈਨ: 0172-2787200 / ਈ-ਸੰਪਰਕ 1800-180-1725।",
+    },
+  },
+  sanitation: {
+    hi: {
+      name: "स्वास्थ्य चिकित्सा अधिकारी (MOH स्वच्छता एवं कचरा प्रबंधन)",
+      advice: "कचरा संग्रहण एवं स्वच्छता संबंधी आधिकारिक प्रक्रिया:\n• डोर-टू-डोर कचरा संग्रहण टिपर न आने पर 24 से 48 घंटे में शिकायत का समाधान किया जाता है।\n• व्हाट्सएप हेल्पलाइन: 99157-62917 | कंट्रोल रूम: 0172-2787200।",
+    },
+    pa: {
+      name: "ਸਿਹਤ ਮੈਡੀਕਲ ਅਫਸਰ (MOH ਸਫਾਈ ਅਤੇ ਕੂੜਾ ਪ੍ਰਬੰਧਨ)",
+      advice: "ਕੂੜਾ ਚੁੱਕਣ ਅਤੇ ਸਫਾਈ ਸੰਬੰਧੀ ਕਾਰਵਾਈ:\n• ਡੋਰ-ਟੂ-ਡੋਰ ਕੂੜਾ ਗੱਡੀ ਨਾ ਆਉਣ 'ਤੇ 24 ਤੋਂ 48 ਘੰਟਿਆਂ ਵਿੱਚ ਸ਼ਿਕਾਇਤ ਦਾ ਨਿਪਟਾਰਾ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।\n• ਵਟਸਐਪ ਹੈਲਪਲਾਈਨ: 99157-62917 | ਕੰਟਰੋਲ ਰੂਮ: 0172-2787200।",
+    },
+  },
+  rti: {
+    hi: {
+      name: "यूटी प्रशासन (सूचना का अधिकार सेल)",
+      advice: "आरटीआई संबंधी आधिकारिक प्रक्रिया:\n• जन सूचना अधिकारी को 30 दिनों के भीतर मांगी गई सूचना प्रदान करना अनिवार्य है।\n• हेल्पलाइन: 0172-2740000।",
+    },
+    pa: {
+      name: "ਯੂ.ਟੀ ਪ੍ਰਸ਼ਾਸਨ (ਸੂਚਨਾ ਦਾ ਅਧਿਕਾਰ ਸੈੱਲ)",
+      advice: "ਆਰ.ਟੀ.ਆਈ ਸੰਬੰਧੀ ਅਧਿਕਾਰਤ ਕਾਰਵਾਈ:\n• ਲੋਕ ਸੂਚਨਾ ਅਧਿਕਾਰੀ ਵੱਲੋਂ 30 ਦਿਨਾਂ ਦੇ ਅੰਦਰ ਜਾਣਕਾਰੀ ਦੇਣਾ ਲਾਜ਼ਮੀ ਹੈ।\n• ਹੈਲਪਲਾਈਨ: 0172-2740000।",
+    },
+  },
+};
+
+// Client-side Multilingual Routing Normalization Helper
+const enrichMultilingualInput = (text) => {
+  const isWater = /पानी|जल|मीटर|नल|सीवर|लीक|बिल|paani|jal|leaking|meter|water|ਸਪਲਾਈ|ਪਾਣੀ|ਸੀਵਰੇਜ|ਬਿੱਲ|ਮੀਟਰ/i.test(text);
+  const isElectricity = /बिजली|करंट|पावर|लाइट|ट्रांसफार्मर|bijli|transformer|power|voltage|ਬਿਜਲੀ|ਟਰਾਂਸਫਾਰਮਰ|ਲਾਈਟ/i.test(text);
+  const isSanitation = /कचरा|कूड़ा|सफाई|डंप|बदबू|tipper|kachra|kooda|garbage|sanitation|waste|ਕੂੜਾ|ਸਫਾਈ/i.test(text);
+  const isRoads = /सड़क|गड्ढा|स्ट्रीट लाइट|अंधेरा|पॉथोल|sadak|gaddha|pothole|streetlight|street light|ਸੜਕ|ਸਟ੍ਰੀਟ ਲਾਈਟ/i.test(text);
+  const isRti = /आरटीआई|सूचना का अधिकार|जानकारी|rti|suchna|ਆਰਟੀਆਈ/i.test(text);
+
+  let enhancements = [];
+  if (isWater) enhancements.push("water supply & inflated meter bill");
+  if (isElectricity) enhancements.push("electricity power cut & transformer");
+  if (isSanitation) enhancements.push("garbage waste collection sanitation");
+  if (isRoads) enhancements.push("road pothole street light maintenance");
+  if (isRti) enhancements.push("right to information RTI cell");
+
+  if (enhancements.length > 0) {
+    return `${text} [Topic: ${enhancements.join(", ")}]`;
+  }
+  return text;
+};
+
 export default function GrievanceNavigator({
-  complaints = [],
-  selectedComplaintId,
-  setSelectedComplaintId,
   routingResult,
   setRoutingResult,
   filedResult,
@@ -37,315 +274,264 @@ export default function GrievanceNavigator({
   filingLoading,
   setFilingLoading,
   onNavigateToTracker,
+  onNavigateToDocuments,
+  language = "en",
 }) {
-  const [intakeMode, setIntakeMode] = useState("manual");
-  const [citizenName, setCitizenName] = useState("");
-  const [selectedSector, setSelectedSector] = useState("Sector 22");
-  const [selectedZone, setSelectedZone] = useState("All");
+  // Step 1 State: Problem description
   const [customText, setCustomText] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [filingError, setFilingError] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioUploading, setAudioUploading] = useState(false);
+  const [detailsError, setDetailsError] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
-  const audioInputRef = useRef(null);
 
-  const containerRef = useRef(null);
-  const findingCardRef = useRef(null);
+  // Step 3 State: Citizen Details
+  const [citizenName, setCitizenName] = useState("");
+  const [citizenAddress, setCitizenAddress] = useState("");
+  const [citizenPhone, setCitizenPhone] = useState("");
+
+  // Flow Step: 'input' -> 'classified' -> 'details' -> 'confirm' -> 'filed'
+  const [flowStep, setFlowStep] = useState(() => {
+    if (filedResult) return "filed";
+    if (routingResult) return "classified";
+    return "input";
+  });
+
+  const textareaRef = useRef(null);
+  const resultCardRef = useRef(null);
+  const detailsCardRef = useRef(null);
+  const confirmCardRef = useRef(null);
   const ticketCardRef = useRef(null);
 
-  // Administrative Sectors grouped by Urban Zones
-  const sectorDatabase = [
-    { sector: "Sector 1", zone: "Zone 1", sub: "Heritage / Capitol Complex" },
-    { sector: "Sector 2", zone: "Zone 1", sub: "VIP / Administrative" },
-    { sector: "Sector 3", zone: "Zone 1", sub: "Raj Bhavan Area" },
-    { sector: "Sector 4", zone: "Zone 1", sub: "MLA Hostel & Residences" },
-    { sector: "Sector 7", zone: "Zone 1", sub: "Sub-Div 1" },
-    { sector: "Sector 8", zone: "Zone 1", sub: "Sub-Div 1" },
-    { sector: "Sector 9", zone: "Zone 1", sub: "UT Secretariat / RTI Cell" },
-    { sector: "Sector 10", zone: "Zone 1", sub: "Museum & Arts" },
-    { sector: "Sector 11", zone: "Zone 1", sub: "Colleges / Residential" },
-    { sector: "Sector 12", zone: "Zone 2", sub: "PGIMER & PEC" },
-    { sector: "Sector 13 (Manimajra)", zone: "Zone 2", sub: "Manimajra Sub-Div" },
-    { sector: "Sector 14 (Panjab University)", zone: "Zone 2", sub: "PU Campus" },
-    { sector: "Sector 15", zone: "Zone 2", sub: "Sub-Div 2" },
-    { sector: "Sector 16", zone: "Zone 2", sub: "General Hospital" },
-    { sector: "Sector 17 (City Center)", zone: "Zone 2", sub: "MCC Head Office / Delux" },
-    { sector: "Sector 18", zone: "Zone 2", sub: "CPDL Electricity Secretariat" },
-    { sector: "Sector 19", zone: "Zone 2", sub: "Sub-Div 2" },
-    { sector: "Sector 20", zone: "Zone 2", sub: "Sub-Div 2" },
-    { sector: "Sector 21", zone: "Zone 2", sub: "Sub-Div 2" },
-    { sector: "Sector 22", zone: "Zone 2", sub: "MCC Water Sub-Div 2" },
-    { sector: "Sector 23", zone: "Zone 2", sub: "Sub-Div 2" },
-    { sector: "Sector 26 (Grain Market)", zone: "Zone 3", sub: "Commercial / Transport" },
-    { sector: "Sector 27", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 28", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 29", zone: "Zone 3", sub: "Industrial / Res" },
-    { sector: "Sector 30", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 31", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 32 (GMCH)", zone: "Zone 3", sub: "Medical College" },
-    { sector: "Sector 33", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 34 (Commercial Hub)", zone: "Zone 3", sub: "Financial District" },
-    { sector: "Sector 35", zone: "Zone 3", sub: "CPDL Sub-Div Sector 34" },
-    { sector: "Sector 36", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 37", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 38", zone: "Zone 3", sub: "Sub-Div 3" },
-    { sector: "Sector 39", zone: "Zone 4", sub: "Water Works / Maloya" },
-    { sector: "Sector 40", zone: "Zone 4", sub: "Sub-Div 4" },
-    { sector: "Sector 41", zone: "Zone 4", sub: "Sub-Div 4" },
-    { sector: "Sector 42", zone: "Zone 4", sub: "Lake / Sports" },
-    { sector: "Sector 43 (ISBT 43)", zone: "Zone 4", sub: "Interstate Bus Terminal" },
-    { sector: "Sector 44", zone: "Zone 4", sub: "Sub-Div 4" },
-    { sector: "Sector 45 (Burail)", zone: "Zone 4", sub: "Sub-Div 4" },
-    { sector: "Sector 46", zone: "Zone 4", sub: "MOH Sanitation Ward 46" },
-    { sector: "Sector 47", zone: "Zone 4", sub: "Sub-Div 4" },
-    { sector: "Sector 48", zone: "Zone 4", sub: "Society Sectors" },
-    { sector: "Sector 49", zone: "Zone 4", sub: "Society Sectors" },
-    { sector: "Sector 50", zone: "Zone 4", sub: "Society Sectors" },
-    { sector: "Industrial Area Phase 1", zone: "Zone 3", sub: "Industrial Cluster" },
-    { sector: "Industrial Area Phase 2", zone: "Zone 3", sub: "Industrial Cluster" },
-  ];
+  // Audio Speech Recognition Refs
+  const recognitionRef = useRef(null);
+  const baseTextRef = useRef("");
 
-  const filteredSectors = useMemo(() => {
-    if (selectedZone === "All") return sectorDatabase;
-    return sectorDatabase.filter((s) => s.zone === selectedZone);
-  }, [selectedZone]);
+  const t = UI_TEXT[language] || UI_TEXT.en;
 
-  // Curated Chandigarh Case Dossiers with Lucide icons
-  const caseDossiers = [
-    {
-      label: "Sector 22 Water Bill Surge",
-      icon: Droplets,
-      text: "I received an inflated water bill of Rs. 4,850 for House No 1240, Sector 22-B via e-Sampark. Last month was Rs. 650. I suspect the smart water meter is faulty.",
-      sector: "Sector 22",
-      name: "Virender Sharma",
-      color: "var(--cobalt)",
-    },
-    {
-      label: "Manimajra Power Outage (ਪੰਜਾਬੀ)",
-      icon: Zap,
-      text: "Manimajra sub-division vich pichhle 4 ghante to bijli band hai. 19121 helpline te koi phone nahi chuk reha, kripya local transformer check karvao.",
-      sector: "Sector 13 (Manimajra)",
-      name: "Gurpreet Singh Sandhu",
-      color: "var(--amber)",
-    },
-    {
-      label: "Sector 35 Streetlights Out (हिन्दी)",
-      icon: Construction,
-      text: "Sector 35-C ke inner park aur V4 road ki street lights pichhle 5 din se band hain, raat ko pura andhera rehta hai aur chori ka darr hai.",
-      sector: "Sector 35",
-      name: "Sunita Aggarwal",
-      color: "var(--terracotta)",
-    },
-    {
-      label: "Sector 46 Waste Tipper Missed",
-      icon: Trash2,
-      text: "The MCC door-to-door waste collection tipper vehicle has missed Sector 46-D for two consecutive days. Segregated garbage is piling up.",
-      sector: "Sector 46",
-      name: "Deepak Mehta",
-      color: "var(--emerald)",
-    },
-    {
-      label: "Sector 19 Road Cave-in / Pothole",
-      icon: Construction,
-      text: "A dangerous deep pothole and road caving has formed near Sector 19 market roundabout causing two-wheeler accidents. Needs urgent patchwork.",
-      sector: "Sector 19",
-      name: "Pooja Verma",
-      color: "var(--terracotta)",
-    },
-  ];
-
-  // Multi-tier script and linguistic language detection
-  const scriptTelemetry = useMemo(() => {
-    if (!customText || !customText.trim()) {
-      return { name: "Latin (English)", code: "en" };
+  // Sync flowStep with external props
+  useEffect(() => {
+    if (filedResult) {
+      setFlowStep("filed");
+    } else if (routingResult && flowStep === "input") {
+      setFlowStep("classified");
     }
+  }, [filedResult, routingResult]);
 
-    const text = customText.trim();
+  // Clean up speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch (e) {}
+      }
+    };
+  }, []);
 
-    // 1. Native Unicode Script Detection
-    if (/[\u0A00-\u0A7F]/.test(text)) return { name: "Gurmukhi (ਪੰਜਾਬੀ)", code: "pa" };
-    if (/[\u0900-\u097F]/.test(text)) return { name: "Devanagari (हिन्दी)", code: "hi" };
-    if (/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) return { name: "Urdu (اردو)", code: "ur" };
-    if (/[\u0980-\u09FF]/.test(text)) return { name: "Bengali (বাংলা)", code: "bn" };
-    if (/[\u0B80-\u0BFF]/.test(text)) return { name: "Tamil (தமிழ்)", code: "ta" };
-    if (/[\u0C00-\u0C7F]/.test(text)) return { name: "Telugu (తెలుగు)", code: "te" };
-    if (/[\u0A80-\u0AFF]/.test(text)) return { name: "Gujarati (ગુજરાતી)", code: "gu" };
-    if (/[\u0C80-\u0CFF]/.test(text)) return { name: "Kannada (ಕನ್ನಡ)", code: "kn" };
-    if (/[\u0D00-\u0D7F]/.test(text)) return { name: "Malayalam (മലയാളം)", code: "ml" };
-
-    // 2. Romanized / Transliterated Language Detection (Latin Script)
-    const lower = text.toLowerCase();
-
-    // Distinct Punjabi tokens (Roman Punjabi / Gurmukhi in Latin script)
-    const punjabiMarkers = [
-      "vich", "wich", "chuk reha", "chuk rahi", "chuk rahe", "chuk rehi",
-      "ghante to", "din to", "saade", "saada", "saadi", "tuhanu", "tuhada",
-      "tuhadi", "assi", "tusi", "hunda", "hundi", "hunde", "karvao", "karwao",
-      "kariye", "painda", "ditta", "ditti", "chali gayi", "jithe", "othe",
-      "kithon", "kinne", "nai chuk", "nahi chuk", "chukda", "chuko",
-      "te koi", "te phone", "helpline te", "manimajra"
-    ];
-
-    let punjabiScore = 0;
-    for (const marker of punjabiMarkers) {
-      if (lower.includes(marker)) punjabiScore += 3;
-    }
-    const punjabiWords = lower.match(/\b(vich|te|to|di|da|de|assi|tusi|saade|chuk|reha|rehi|karvao|kariye|hunda|chali)\b/g);
-    if (punjabiWords) punjabiScore += punjabiWords.length;
-
-    // Distinct Hindi / Hinglish tokens
-    const hindiMarkers = [
-      "hai", "hain", "tha", "thi", "the", "mein", "mai", "se", "aur", "ya",
-      "mera", "meri", "mere", "humara", "humari", "humare", "aapka", "aapki",
-      "kripya", "kripa", "kripaya", "bohot", "bahut", "zyada", "jyada",
-      "pichhle", "din", "raat", "andhera", "rehta", "rehti", "chori", "darr",
-      "sadak", "gaddha", "khadda", "kooda", "kachra", "gaadi", "theek",
-      "karo", "karein", "aaya", "aayi", "gaya", "gayi", "band", "chahiye",
-      "hoga", "hogi", "nahi", "nahin", "paani", "bijli", "sadak par", "din se"
-    ];
-
-    let hindiScore = 0;
-    for (const marker of hindiMarkers) {
-      if (lower.includes(marker)) hindiScore += 1;
-    }
-    const hindiWords = lower.match(/\b(hai|hain|tha|thi|the|ke|ki|ka|ko|mein|se|aur|ya|mera|meri|humara|kripya|bohot|bahut|zyada|din|raat|nahi|nahin|theek|karo|karein|band|aaya|aayi|gaya|gayi)\b/g);
-    if (hindiWords) hindiScore += (hindiWords.length * 1.5);
-
-    // Explicit check for Roman Punjabi dominance
-    if (punjabiScore >= 2 && punjabiScore >= hindiScore) {
-      return { name: "Punjabi (ਪੰਜਾਬੀ)", code: "pa" };
-    }
-
-    // Explicit check for Hinglish / Roman Hindi dominance
-    if (hindiScore >= 3) {
-      return { name: "Hindi (हिन्दी)", code: "hi" };
-    }
-
-    return { name: "Latin (English)", code: "en" };
-  }, [customText]);
-
-  // GSAP Smooth Reveal for Advisory Finding
+  // GSAP Smooth Reveal for Advisory Result
   useGSAP(() => {
-    if (routingResult && findingCardRef.current) {
-      gsap.from(findingCardRef.current, {
-        y: 25,
+    if (flowStep === "classified" && resultCardRef.current) {
+      gsap.from(resultCardRef.current, {
+        y: 20,
         opacity: 0,
-        duration: 0.5,
-        ease: "power3.out",
+        duration: 0.45,
+        ease: "power2.out",
       });
-      findingCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      resultCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [routingResult]);
+  }, [flowStep]);
+
+  // GSAP Smooth Reveal for Citizen Details Form
+  useGSAP(() => {
+    if (flowStep === "details" && detailsCardRef.current) {
+      gsap.from(detailsCardRef.current, {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      detailsCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [flowStep]);
+
+  // GSAP Smooth Reveal for Confirmation Card
+  useGSAP(() => {
+    if (flowStep === "confirm" && confirmCardRef.current) {
+      gsap.from(confirmCardRef.current, {
+        y: 20,
+        opacity: 0,
+        duration: 0.45,
+        ease: "power2.out",
+      });
+      confirmCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [flowStep]);
 
   // GSAP Smooth Reveal & Confetti for Stamped Certificate
   useGSAP(() => {
-    if (filedResult && ticketCardRef.current) {
+    if (flowStep === "filed" && ticketCardRef.current) {
       try {
         confetti({
-          particleCount: 75,
-          spread: 70,
+          particleCount: 60,
+          spread: 60,
           origin: { y: 0.6 },
-          colors: ["#ea580c", "#059669", "#2563eb", "#d97706"],
+          colors: ["#2563eb", "#059669", "#ea580c"],
         });
       } catch (err) {
         // ignore
       }
 
       gsap.from(ticketCardRef.current, {
-        scale: 0.96,
+        scale: 0.97,
         opacity: 0,
-        duration: 0.6,
+        duration: 0.5,
         ease: "back.out(1.2)",
       });
       ticketCardRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [filedResult]);
+  }, [flowStep]);
 
-  // Browser Speech Recognition
-  const toggleSpeechRecognition = () => {
+  // --------------------------------------------------------------------------
+  // ISSUE 2 & 3: LIVE SPEECH RECOGNITION + TEXT INPUT COEXISTENCE
+  // --------------------------------------------------------------------------
+  const startSpeechRecognition = () => {
+    setApiError(null);
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Browser speech recognition is not supported in this browser. Please use Chrome/Edge or upload an audio file.");
+      setApiError(
+        language === "hi"
+          ? "ब्राउज़र में स्पीच रिकग्निशन समर्थित नहीं है। कृपया Google Chrome या Edge का उपयोग करें।"
+          : language === "pa"
+          ? "ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਸਪੀਚ ਰਿਕੋਗਨੀਸ਼ਨ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ Google Chrome ਜਾਂ Edge ਵਰਤੋ।"
+          : "Browser speech recognition is not supported in this browser. Please use Chrome or Edge."
+      );
+      return;
+    }
+
+    // Preserve baseline text so typing and speech seamlessly merge
+    baseTextRef.current = customText ? customText.trimEnd() + " " : "";
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      // Use selected language from the UI
+      if (language === "hi") {
+        recognition.lang = "hi-IN";
+      } else if (language === "pa") {
+        recognition.lang = "pa-IN";
+      } else {
+        recognition.lang = "en-IN";
+      }
+
+      recognition.onstart = () => {
+        setIsRecording(true);
+      };
+
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+        let finalTranscript = "";
+
+        for (let i = 0; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        // Live text appears inside the same text input in real time
+        const combined = baseTextRef.current + finalTranscript + interimTranscript;
+        setCustomText(combined);
+
+        if (textareaRef.current) {
+          textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech recognition error:", event.error);
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setApiError(
+            language === "hi"
+              ? "माइक्रोफ़ोन की अनुमति अस्वीकृत है। कृपया ब्राउज़र एड्रेस बार में माइक्रोफ़ोन की अनुमति दें।"
+              : language === "pa"
+              ? "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਆਗਿਆ ਰੱਦ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਮਾਈਕ ਦੀ ਆਗਿਆ ਦਿਓ।"
+              : "Microphone permission denied. Please allow microphone access in your browser address bar."
+          );
+          setIsRecording(false);
+        } else if (event.error === "language-not-supported" && language === "pa") {
+          // If browser lacks pa-IN language pack, fall back to Indian Punjabi/Hindi
+          try {
+            recognition.lang = "hi-IN";
+            recognition.start();
+          } catch (e) {
+            setIsRecording(false);
+          }
+        }
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.warn("Failed to start speech recognition:", err);
+      setIsRecording(false);
+    }
+  };
+
+  const stopSpeechRecognition = () => {
+    setIsRecording(false);
+    if (recognitionRef.current) {
+      const rec = recognitionRef.current;
+      recognitionRef.current = null;
+      try {
+        rec.stop();
+      } catch (e) {}
+    }
+    baseTextRef.current = customText ? customText.trimEnd() + " " : "";
+  };
+
+  const toggleSpeechRecognition = () => {
+    if (isRecording) {
+      stopSpeechRecognition();
+    } else {
+      startSpeechRecognition();
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // STEP 2: UNDERSTAND / CLASSIFY GRIEVANCE
+  // --------------------------------------------------------------------------
+  const handleProcessComplaint = async () => {
+    setApiError(null);
+    if (!customText || !customText.trim()) {
+      setApiError(
+        language === "hi"
+          ? "कृपया भेजने से पहले अपनी समस्या लिखें या बोलें।"
+          : language === "pa"
+          ? "ਕਿਰਪਾ ਕਰਕੇ ਭੇਜਣ ਤੋਂ ਪਹਿਲਾਂ ਆਪਣੀ ਸਮੱਸਿਆ ਲਿਖੋ ਜਾਂ ਬੋਲੋ।"
+          : "Please type or speak your problem before sending."
+      );
       return;
     }
 
     if (isRecording) {
-      setIsRecording(false);
-      return;
+      stopSpeechRecognition();
     }
 
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = "hi-IN";
+    // Enrich multilingual keywords so routing works accurately
+    const enrichedText = enrichMultilingualInput(customText.trim());
 
-      recognition.onstart = () => setIsRecording(true);
-      recognition.onend = () => setIsRecording(false);
-      recognition.onerror = () => setIsRecording(false);
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setCustomText((prev) => (prev ? prev + " " + transcript : transcript));
-      };
-
-      recognition.start();
-    } catch (e) {
-      setIsRecording(false);
-    }
-  };
-
-  // Azure Cognitive Speech File Upload
-  const handleAudioUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setAudioUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/transcribe-audio", {
-        method: "POST",
-        body: formData,
-      });
-      const txt = data.text || data.transcribed_text;
-      if (txt) {
-        setCustomText((prev) => (prev ? prev + " " + txt : txt));
-      } else if (data.error) {
-        alert("Azure Speech note: " + data.error);
-      }
-    } catch (err) {
-      console.error("Audio transcription error:", err);
-    } finally {
-      setAudioUploading(false);
-    }
-  };
-
-  // Process & Route Grievance
-  const handleProcessComplaint = async () => {
-    setApiError(null);
-    let bodyData = {};
-    if (intakeMode === "manual") {
-      if (!customText || !customText.trim()) {
-        setApiError("Please enter your grievance description or select a curated case dossier.");
-        return;
-      }
-      let fullText = customText.trim();
-      if (selectedSector && !fullText.toLowerCase().includes(selectedSector.toLowerCase())) {
-        fullText = `[Location: ${selectedSector}] ${fullText}`;
-      }
-      bodyData = {
-        raw_text: fullText,
-        citizen_name: citizenName.trim() || "Chandigarh Citizen",
-      };
-    } else {
-      if (!selectedComplaintId) {
-        setApiError("Please select an archival grievance scenario from the list.");
-        return;
-      }
-      bodyData = { complaint_id: selectedComplaintId };
-    }
+    const bodyData = {
+      raw_text: enrichedText,
+      citizen_name: citizenName.trim() || (language === "hi" ? "नागरिक" : language === "pa" ? "ਨਾਗਰਿਕ" : "Citizen"),
+    };
 
     setLoading(true);
     setFiledResult(null);
@@ -360,6 +546,7 @@ export default function GrievanceNavigator({
         throw new Error(data?.error || `Server returned error (${res.status}).`);
       }
       setRoutingResult(data);
+      setFlowStep("classified");
     } catch (e) {
       console.error("Error processing complaint:", e);
       setApiError(e.message || "Failed to reach backend server. Verify Flask is running on port 5001.");
@@ -368,21 +555,45 @@ export default function GrievanceNavigator({
     }
   };
 
-  // Official Grievance Filing
+  // --------------------------------------------------------------------------
+  // STEP 3: CITIZEN DETAILS VALIDATION & ADVANCE
+  // --------------------------------------------------------------------------
+  const handleProceedToDetails = () => {
+    setDetailsError(null);
+    setFlowStep("details");
+  };
+
+  const handleReviewDetails = (e) => {
+    e?.preventDefault();
+    setDetailsError(null);
+    if (!citizenName.trim() || !citizenAddress.trim()) {
+      setDetailsError(t.nameRequiredError);
+      return;
+    }
+    setFlowStep("confirm");
+  };
+
+  // --------------------------------------------------------------------------
+  // STEP 5: OFFICIAL GRIEVANCE FILING
+  // --------------------------------------------------------------------------
   const handleFileComplaint = async () => {
     if (!routingResult) return;
     setFilingLoading(true);
     setFilingError(null);
     try {
-      let bodyData = {};
-      if (intakeMode === "manual") {
-        bodyData = {
-          raw_text: routingResult.complaint?.raw_text || customText,
-          citizen_name: routingResult.complaint?.citizen_name || citizenName || "Chandigarh Citizen",
-        };
-      } else {
-        bodyData = { complaint_id: selectedComplaintId };
+      // Include citizen location and phone inside complaint payload
+      let finalGrievanceText = customText.trim();
+      if (citizenAddress.trim()) {
+        finalGrievanceText = `[Location: ${citizenAddress.trim()}] ${finalGrievanceText}`;
       }
+      if (citizenPhone.trim()) {
+        finalGrievanceText = `${finalGrievanceText} (Citizen Phone: ${citizenPhone.trim()})`;
+      }
+
+      const bodyData = {
+        raw_text: finalGrievanceText,
+        citizen_name: citizenName.trim() || "Citizen",
+      };
 
       const res = await fetch("/api/file-complaint", {
         method: "POST",
@@ -394,9 +605,10 @@ export default function GrievanceNavigator({
         throw new Error(data?.error || `Failed to file grievance (status ${res.status})`);
       }
       setFiledResult(data);
+      setFlowStep("filed");
     } catch (e) {
       console.error("Error filing complaint:", e);
-      setFilingError(e.message || "Could not register grievance in Azure Table Storage.");
+      setFilingError(e.message || "Could not register grievance.");
     } finally {
       setFilingLoading(false);
     }
@@ -408,402 +620,468 @@ export default function GrievanceNavigator({
     setTimeout(() => setCopiedId(false), 2000);
   };
 
+  const handleReset = () => {
+    stopSpeechRecognition();
+    setCustomText("");
+    setCitizenName("");
+    setCitizenAddress("");
+    setCitizenPhone("");
+    setRoutingResult(null);
+    setFiledResult(null);
+    setApiError(null);
+    setFilingError(null);
+    setDetailsError(null);
+    setFlowStep("input");
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  // Department & localized advice resolution
+  const deptId = routingResult?.routing?.department_id;
+  const localizedInfo = LOCALIZED_ADVICE[deptId]?.[language];
+
+  const displayedDeptName = localizedInfo?.name || routingResult?.routing?.department_name || "Municipal Authority";
+  const displayedAdvice = localizedInfo?.advice ||
+    routingResult?.response?.statutory_advice ||
+    routingResult?.response?.grounded_response ||
+    routingResult?.response?.answer ||
+    "Your grievance has been verified against municipal policies.";
+
   return (
-    <div ref={containerRef} style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="landing-experience">
       {/* =====================================================================
-          CARD 1: CITIZEN INTAKE STUDIO
+          STEP 1: CITIZEN PROBLEM INPUT (HERO AREA)
           ===================================================================== */}
-      <section className="studio-card">
-        <header className="studio-header">
-          <div className="studio-title-area">
-            <span className="section-tag">
-              <Sparkles size={14} />
-              <span>Phase 1 • Citizen Intake & Location Radar</span>
-            </span>
-            <h2 className="studio-title">Draft & Route Public Grievance</h2>
-            <p className="studio-subtitle">
-              Submit in Hindi, Punjabi, or English. Instant statutory routing to MCC, CPDL, or UT Administration under the Punjab Right to Service Act 2011.
-            </p>
-          </div>
+      <section className="landing-hero-section">
+        <div className="landing-heading-block">
+          <h1 className="landing-title">{t.heroTitle}</h1>
+          <p className="landing-subtitle">{t.heroSubtitle}</p>
+        </div>
 
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <button
-              type="button"
-              className={`btn btn-sm ${intakeMode === "manual" ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setIntakeMode("manual")}
-            >
-              Draft Grievance
-            </button>
-            <button
-              type="button"
-              className={`btn btn-sm ${intakeMode === "mock" ? "btn-primary" : "btn-secondary"}`}
-              onClick={() => setIntakeMode("mock")}
-            >
-              Archival Cases ({complaints.length})
-            </button>
-          </div>
-        </header>
+        {/* ONE Large Input Container: Typing & Speech Coexist */}
+        <div className={`landing-input-card ${isRecording ? "recording" : ""}`}>
+          <textarea
+            ref={textareaRef}
+            className="landing-textarea"
+            placeholder={t.inputPlaceholder}
+            value={customText}
+            onChange={(e) => {
+              setCustomText(e.target.value);
+              baseTextRef.current = e.target.value ? e.target.value.trimEnd() + " " : "";
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (customText.trim() && !loading) {
+                  handleProcessComplaint();
+                }
+              }
+            }}
+            rows={3}
+            aria-label="Describe your problem"
+          />
 
+          <div className="landing-input-footer">
+            <div className="landing-input-hint">
+              {isRecording ? (
+                <span className="listening-pulse-label">
+                  <span className="pulse-indicator-dot" />
+                  <span>{t.listening}</span>
+                </span>
+              ) : (
+                <span className="subtle-prompt-lang">{t.promptLang}</span>
+              )}
+            </div>
+
+            <div className="landing-input-actions">
+              {/* Microphone Button (Uses Selected Language) */}
+              <button
+                type="button"
+                className={`btn-landing-mic ${isRecording ? "active" : ""}`}
+                onClick={toggleSpeechRecognition}
+                title={isRecording ? t.clickToStop : "Speak your problem"}
+                aria-label="Microphone"
+              >
+                {isRecording ? <Square size={16} /> : <Mic size={19} />}
+              </button>
+
+              {/* Blue Primary Send Action */}
+              <button
+                type="button"
+                className="btn-landing-send"
+                onClick={handleProcessComplaint}
+                disabled={loading || !customText.trim()}
+                title={t.send}
+                aria-label="Send"
+              >
+                {loading ? (
+                  <span className="landing-spinner" />
+                ) : (
+                  <Send size={18} />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Error notification if API fails */}
         {apiError && (
-          <div style={{ background: "var(--critical-subtle)", border: "1px solid var(--critical-border)", color: "var(--critical)", padding: "0.85rem 1.15rem", borderRadius: "8px", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "8px", fontSize: "0.86rem" }}>
+          <div className="landing-error-box">
             <AlertCircle size={16} />
             <span>{apiError}</span>
           </div>
         )}
 
-        {intakeMode === "manual" ? (
-          <div>
-            {/* Form Row: Name & Phone */}
-            <div className="form-grid-2">
-              <div className="field-group">
-                <label className="field-label">Citizen Full Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Virender Sharma"
-                  value={citizenName}
-                  onChange={(e) => setCitizenName(e.target.value)}
-                  className="field-input"
-                />
-              </div>
-
-              {/* Sector Picker with Zones */}
-              <div className="field-group">
-                <label className="field-label">Administrative Sector</label>
-                <select
-                  value={selectedSector}
-                  onChange={(e) => setSelectedSector(e.target.value)}
-                  className="field-input"
-                >
-                  {sectorDatabase.map((s) => (
-                    <option key={s.sector} value={s.sector}>
-                      {s.sector} — {s.sub} ({s.zone})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Zone Filter Chips */}
-            <div className="sector-picker-panel">
-              <div className="sector-picker-header">
-                <span className="sector-picker-title">
-                  <MapPin size={13} color="var(--terracotta)" />
-                  <span>Filter Sectors by Administrative Zone:</span>
-                </span>
-                <span style={{ fontSize: "0.72rem", color: "var(--slate-500)", fontFamily: "var(--font-mono)" }}>
-                  {filteredSectors.length} Sectors Active
-                </span>
-              </div>
-              <div className="zone-filter-strip">
-                {["All", "Zone 1", "Zone 2", "Zone 3", "Zone 4"].map((z) => (
-                  <button
-                    key={z}
-                    type="button"
-                    className={`zone-pill ${selectedZone === z ? "active" : ""}`}
-                    onClick={() => setSelectedZone(z)}
-                  >
-                    {z}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Grievance Drafting Canvas */}
-            <div className="drafting-wrapper">
-              <label className="field-label" style={{ marginBottom: "0.5rem" }}>
-                Grievance Narration (Text or Voice)
-              </label>
-              <textarea
-                placeholder="Describe your issue with water bills, power cuts, missed garbage collection, potholes, or streetlights in any language..."
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-                className="drafting-textarea"
-              />
-
-              <div className="drafting-toolbar">
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                  <span className="script-badge">
-                    <span>Language Detected:</span>
-                    <strong>{scriptTelemetry.name}</strong>
-                  </span>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <button
-                    type="button"
-                    className={`voice-btn ${isRecording ? "recording" : ""}`}
-                    onClick={toggleSpeechRecognition}
-                  >
-                    <Mic size={14} />
-                    <span>{isRecording ? "Listening (Click to Stop)..." : "Record Voice Note"}</span>
-                  </button>
-
-                  <input
-                    type="file"
-                    ref={audioInputRef}
-                    accept="audio/*"
-                    style={{ display: "none" }}
-                    onChange={handleAudioUpload}
-                  />
-
-                  <button
-                    type="button"
-                    className="voice-btn"
-                    onClick={() => audioInputRef.current && audioInputRef.current.click()}
-                    disabled={audioUploading}
-                  >
-                    <span>{audioUploading ? "Transcribing..." : "Upload Audio (.wav/.mp3)"}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Scenario Chips */}
-            <div className="scenarios-strip">
-              <span className="scenarios-title">
-                <FileCheck size={13} color="var(--slate-600)" />
-                <span>Quick Chandigarh Test Cases:</span>
-              </span>
-              <div className="scenario-chips-row">
-                {caseDossiers.map((c, i) => {
-                  const Icon = c.icon;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      className="scenario-chip"
-                      onClick={() => {
-                        setCustomText(c.text);
-                        setCitizenName(c.name);
-                        setSelectedSector(c.sector);
-                      }}
-                    >
-                      <Icon size={14} color={c.color} />
-                      <span>{c.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Primary Analysis Trigger */}
+        {/* THREE SECONDARY ACTIONS (Shown when in initial input state) */}
+        {flowStep === "input" && (
+          <div className="landing-actions-grid">
             <button
               type="button"
-              className="btn-primary-action"
-              onClick={handleProcessComplaint}
-              disabled={loading || !customText.trim()}
+              className="action-card"
+              onClick={() => {
+                if (textareaRef.current) {
+                  textareaRef.current.focus();
+                }
+              }}
             >
-              <Send size={16} />
-              <span>{loading ? "Analyzing with Azure AI Search + Foundry..." : "Analyze & Formulate Legal Advisory"}</span>
+              <div className="action-icon-wrap icon-blue">
+                <AlertCircle size={22} />
+              </div>
+              <div className="action-content">
+                <h3 className="action-title">{t.actionReportTitle}</h3>
+                <p className="action-desc">{t.actionReportDesc}</p>
+              </div>
             </button>
-          </div>
-        ) : (
-          <div>
-            {/* Mock Complaints List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
-              {complaints.map((c) => (
-                <div
-                  key={c.id}
-                  onClick={() => setSelectedComplaintId(c.id)}
-                  style={{
-                    padding: "1rem 1.25rem",
-                    borderRadius: "8px",
-                    border: `1px solid ${selectedComplaintId === c.id ? "var(--slate-900)" : "var(--slate-200)"}`,
-                    background: selectedComplaintId === c.id ? "var(--surface-subtle)" : "#ffffff",
-                    cursor: "pointer",
-                    boxShadow: selectedComplaintId === c.id ? "var(--shadow-sm)" : "none",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                    <strong style={{ fontSize: "0.92rem", color: "var(--slate-900)" }}>{c.citizen_name}</strong>
-                    <span className="badge badge-primary">{c.sector || "UT Chandigarh"}</span>
-                  </div>
-                  <p style={{ fontSize: "0.85rem", color: "var(--slate-600)", margin: 0 }}>"{c.raw_text}"</p>
-                </div>
-              ))}
-            </div>
 
             <button
               type="button"
-              className="btn-primary-action"
-              onClick={handleProcessComplaint}
-              disabled={loading || !selectedComplaintId}
+              className="action-card"
+              onClick={() => onNavigateToDocuments && onNavigateToDocuments()}
             >
-              <Send size={16} />
-              <span>{loading ? "Processing Archival Docket..." : "Analyze Selected Case"}</span>
+              <div className="action-icon-wrap icon-emerald">
+                <FileText size={22} />
+              </div>
+              <div className="action-content">
+                <h3 className="action-title">{t.actionDocTitle}</h3>
+                <p className="action-desc">{t.actionDocDesc}</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              className="action-card"
+              onClick={() => onNavigateToTracker && onNavigateToTracker()}
+            >
+              <div className="action-icon-wrap icon-indigo">
+                <Search size={22} />
+              </div>
+              <div className="action-content">
+                <h3 className="action-title">{t.actionTrackTitle}</h3>
+                <p className="action-desc">{t.actionTrackDesc}</p>
+              </div>
             </button>
           </div>
         )}
       </section>
 
       {/* =====================================================================
-          CARD 2: PROGRESSIVE STATUTORY LEGAL ADVISORY (GSAP REVEAL)
+          STEP 2: UNDERSTAND / CLASSIFY PROBLEM (GROUNDED GUIDANCE CARD)
           ===================================================================== */}
-      {routingResult && (
-        <section ref={findingCardRef} className="statutory-finding-card">
-          <header className="finding-header">
-            <div>
-              <span className="section-tag" style={{ color: "var(--cobalt)" }}>
+      {flowStep === "classified" && routingResult && (
+        <section ref={resultCardRef} className="guidance-result-card">
+          <header className="guidance-header">
+            <div className="guidance-dept-meta">
+              <span className="guidance-tag">
                 <ShieldCheck size={14} />
-                <span>Phase 2 • Grounded Statutory Advisory</span>
+                <span>{t.assignedAuthority}</span>
               </span>
-              <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.35rem", fontWeight: 800, color: "var(--slate-900)" }}>
-                {routingResult.routing?.department_name || "Assigned Authority"}
-              </h3>
+              <h2 className="guidance-dept-name">{displayedDeptName}</h2>
             </div>
-            <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-              <span className="badge badge-primary">
-                Confidence: {routingResult.routing?.confidence ? `${Math.round(routingResult.routing.confidence * 100)}%` : "Verified"}
-              </span>
-              <span className="badge badge-warning">
-                <Clock size={12} />
-                <span>SLA: {routingResult.response?.statutory_sla || "15 Days"}</span>
-              </span>
+            <div className="guidance-sla-badge">
+              <Clock size={14} />
+              <span>SLA: {routingResult.response?.statutory_sla || "15 Days"}</span>
             </div>
           </header>
 
-          {/* Metadata Grid */}
-          <div className="finding-meta-grid">
-            <div className="meta-cell">
-              <span className="meta-label">Competent Authority</span>
-              <span className="meta-value">{routingResult.response?.authority || "Municipal Corporation Chandigarh"}</span>
+          <div className="guidance-meta-row">
+            <div className="guidance-meta-item">
+              <span className="meta-lbl">{t.authority}</span>
+              <span className="meta-val">{routingResult.response?.authority || "UT Administration"}</span>
             </div>
-            <div className="meta-cell">
-              <span className="meta-label">Statutory Regulation</span>
-              <span className="meta-value">{routingResult.response?.rule || "Punjab Right to Service Act 2011"}</span>
+            <div className="guidance-meta-item">
+              <span className="meta-lbl">{t.resolutionSla}</span>
+              <span className="meta-val">{routingResult.response?.statutory_sla || "Standard SLA"}</span>
             </div>
-            <div className="meta-cell">
-              <span className="meta-label">Official Nodal Office</span>
-              <span className="meta-value">{routingResult.response?.office || "MCC Delux Building, Sector 17"}</span>
-            </div>
-            <div className="meta-cell">
-              <span className="meta-label">Department Helpline</span>
-              <span className="meta-value" style={{ color: "var(--cobalt)" }}>
-                {routingResult.response?.helpline || "0172-2787200"}
-              </span>
-            </div>
+            {routingResult.response?.helpline && (
+              <div className="guidance-meta-item">
+                <span className="meta-lbl">{t.helpline}</span>
+                <span className="meta-val text-blue">{routingResult.response.helpline}</span>
+              </div>
+            )}
           </div>
 
-          {/* Synthesized Legal Advisory */}
-          <div className="finding-content-box">
-            <span className="finding-content-title">
-              <FileCheck size={14} />
-              <span>Official Citizen Advisory & Redressal Procedures:</span>
-            </span>
-            <p className="finding-content-text" style={{ whiteSpace: "pre-line", lineHeight: 1.65 }}>
-              {routingResult.response?.statutory_advice || routingResult.response?.grounded_response || routingResult.response?.answer || "Grievance received and verified against Chandigarh Municipal policies."}
-            </p>
+          <div className="guidance-advice-box">
+            <h4 className="advice-title">{t.legalAdviceTitle}</h4>
+            <p className="advice-body">{displayedAdvice}</p>
           </div>
 
-          {filingError && (
-            <div style={{ background: "var(--critical-subtle)", border: "1px solid var(--critical-border)", color: "var(--critical)", padding: "0.85rem 1.15rem", borderRadius: "8px", marginBottom: "1.25rem", fontSize: "0.86rem" }}>
-              ⚠️ {filingError}
-            </div>
-          )}
+          <div className="guidance-actions">
+            <button
+              type="button"
+              className="btn-file-primary"
+              onClick={handleProceedToDetails}
+            >
+              <span>{t.fileTicket}</span>
+              <ArrowRight size={17} />
+            </button>
 
-          {/* Action to File Grievance */}
-          <button
-            type="button"
-            className="btn-file-ticket"
-            onClick={handleFileComplaint}
-            disabled={filingLoading}
-          >
-            <ShieldCheck size={18} />
-            <span>{filingLoading ? "Registering in Azure Table Database..." : "File Official Grievance & Issue Docket"}</span>
-          </button>
+            <button
+              type="button"
+              className="btn-ask-another"
+              onClick={handleReset}
+            >
+              <RotateCcw size={15} />
+              <span>{t.askAnother}</span>
+            </button>
+          </div>
         </section>
       )}
 
       {/* =====================================================================
-          CARD 3: OFFICIAL VERIFIED DIGITAL TICKET (CERTIFICATE)
+          STEP 3: ASK FOR MISSING CITIZEN DETAILS
           ===================================================================== */}
-      {filedResult && (
-        <section ref={ticketCardRef} className="ticket-credential-card">
-          <header className="ticket-header-row">
-            <div>
-              <span className="section-tag" style={{ color: "var(--emerald-dark)" }}>
-                <CheckCircle2 size={14} />
-                <span>Phase 3 • Grievance Registered & Filed</span>
+      {flowStep === "details" && (
+        <section ref={detailsCardRef} className="details-form-card">
+          <header className="details-header">
+            <span className="guidance-tag" style={{ color: "var(--cobalt)" }}>
+              <User size={14} />
+              <span>Step 2 of 3 • Citizen Verification</span>
+            </span>
+            <h2 className="details-title">{t.detailsTitle}</h2>
+            <p className="details-subtitle">{t.detailsSubtitle}</p>
+          </header>
+
+          {detailsError && (
+            <div className="landing-error-box" style={{ marginBottom: "1.25rem" }}>
+              <AlertCircle size={16} />
+              <span>{detailsError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleReviewDetails}>
+            <div className="form-grid-2">
+              <div className="field-group">
+                <label className="field-label">{t.nameLabel} *</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type="text"
+                    className="field-input"
+                    placeholder={t.namePlaceholder}
+                    value={citizenName}
+                    onChange={(e) => setCitizenName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="field-group">
+                <label className="field-label">{t.phoneLabel}</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type="tel"
+                    className="field-input"
+                    placeholder={t.phonePlaceholder}
+                    value={citizenPhone}
+                    onChange={(e) => setCitizenPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="field-group" style={{ marginBottom: "1.75rem" }}>
+              <label className="field-label">{t.addressLabel} *</label>
+              <input
+                type="text"
+                className="field-input"
+                placeholder={t.addressPlaceholder}
+                value={citizenAddress}
+                onChange={(e) => setCitizenAddress(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="guidance-actions">
+              <button
+                type="submit"
+                className="btn-file-primary"
+              >
+                <span>{t.reviewBtn}</span>
+                <ArrowRight size={17} />
+              </button>
+
+              <button
+                type="button"
+                className="btn-ask-another"
+                onClick={() => setFlowStep("classified")}
+              >
+                <span>{t.backToGuidance}</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {/* =====================================================================
+          STEP 4: SHORT CONFIRMATION CARD BEFORE FILING
+          ===================================================================== */}
+      {flowStep === "confirm" && (
+        <section ref={confirmCardRef} className="confirmation-card">
+          <header className="details-header">
+            <span className="guidance-tag" style={{ color: "var(--cobalt)" }}>
+              <CheckCircle2 size={14} />
+              <span>Step 3 of 3 • Review & Official Confirmation</span>
+            </span>
+            <h2 className="details-title">{t.confirmTitle}</h2>
+            <p className="details-subtitle">{t.confirmSubtitle}</p>
+          </header>
+
+          <div className="confirm-grid">
+            <div className="confirm-cell">
+              <span className="meta-lbl">{t.citizenSummary}</span>
+              <span className="meta-val">{citizenName}</span>
+            </div>
+            <div className="confirm-cell">
+              <span className="meta-lbl">{t.locationSummary}</span>
+              <span className="meta-val">{citizenAddress}</span>
+            </div>
+            <div className="confirm-cell">
+              <span className="meta-lbl">{t.phoneSummary}</span>
+              <span className="meta-val">{citizenPhone || "Not provided"}</span>
+            </div>
+            <div className="confirm-cell">
+              <span className="meta-lbl">{t.deptSummary}</span>
+              <span className="meta-val text-blue">{displayedDeptName}</span>
+            </div>
+            <div className="confirm-cell">
+              <span className="meta-lbl">{t.slaSummary}</span>
+              <span className="meta-val" style={{ color: "var(--amber)" }}>
+                {routingResult?.response?.statutory_sla || "15 Days"}
               </span>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "4px" }}>
-                <span className="ticket-docket-badge">{filedResult.tracking_id}</span>
+            </div>
+          </div>
+
+          <div className="confirm-problem-box">
+            <span className="meta-lbl" style={{ marginBottom: "6px", display: "block" }}>
+              {t.problemSummary}:
+            </span>
+            <p style={{ fontSize: "0.92rem", color: "var(--slate-800)", margin: 0, lineHeight: 1.55 }}>
+              "{customText}"
+            </p>
+          </div>
+
+          {filingError && (
+            <div className="landing-error-box" style={{ marginBottom: "1.25rem" }}>
+              <AlertCircle size={16} />
+              <span>{filingError}</span>
+            </div>
+          )}
+
+          <div className="guidance-actions">
+            <button
+              type="button"
+              className="btn-file-primary"
+              onClick={handleFileComplaint}
+              disabled={filingLoading}
+            >
+              <ShieldCheck size={18} />
+              <span>{filingLoading ? t.filing : t.confirmAndFileBtn}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn-ask-another"
+              onClick={() => setFlowStep("details")}
+              disabled={filingLoading}
+            >
+              <FileEdit size={15} />
+              <span>{t.editDetailsBtn}</span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* =====================================================================
+          STEP 6: OFFICIAL FILED TICKET CONFIRMATION
+          ===================================================================== */}
+      {flowStep === "filed" && filedResult && (
+        <section ref={ticketCardRef} className="ticket-result-card">
+          <header className="ticket-header">
+            <div>
+              <span className="ticket-status-pill">
+                <CheckCircle2 size={14} />
+                <span>{t.officiallyFiled}</span>
+              </span>
+              <div className="ticket-id-row">
+                <span className="ticket-id-text">{filedResult.tracking_id}</span>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
+                  className="btn-copy-id"
                   onClick={() => copyToClipboard(filedResult.tracking_id)}
-                  title="Copy Docket ID"
+                  title={t.copy}
                 >
-                  {copiedId ? <Check size={13} color="var(--emerald)" /> : <Copy size={13} />}
-                  <span>{copiedId ? "Copied" : "Copy"}</span>
+                  {copiedId ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+                  <span>{copiedId ? t.copied : t.copy}</span>
                 </button>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
-              <span className="badge badge-success">
-                ● Status: {filedResult.status || "Filed"}
-              </span>
-              <span className="badge badge-primary">
-                {filedResult._storage || "Azure Table Storage"}
-              </span>
-            </div>
+            <span className="badge-ticket-status">
+              ● {filedResult.status || "Filed"}
+            </span>
           </header>
 
-          {/* Ticket Information Grid */}
-          <div className="ticket-grid">
-            <div className="meta-cell">
-              <span className="meta-label">Citizen</span>
-              <span className="meta-value">{filedResult.citizen_name || "Citizen"}</span>
+          <div className="ticket-details-grid">
+            <div className="detail-item">
+              <span className="detail-lbl">{t.citizenSummary}</span>
+              <span className="detail-val">{filedResult.citizen_name || citizenName}</span>
             </div>
-            <div className="meta-cell">
-              <span className="meta-label">Assigned Department</span>
-              <span className="meta-value">{filedResult.department_name || "Municipal Authority"}</span>
+            <div className="detail-item">
+              <span className="detail-lbl">{t.department}</span>
+              <span className="detail-val">{filedResult.department_name || displayedDeptName}</span>
             </div>
-            <div className="meta-cell">
-              <span className="meta-label">Statutory SLA Target</span>
-              <span className="meta-value" style={{ color: "var(--amber)" }}>
-                {filedResult.sla_target_days ? `${filedResult.sla_target_days} Days` : "Standard SLA"}
+            <div className="detail-item">
+              <span className="detail-lbl">{t.targetResolution}</span>
+              <span className="detail-val text-amber">
+                {filedResult.sla_target_days ? `${filedResult.sla_target_days} Days` : "15 Days"}
               </span>
             </div>
-            <div className="meta-cell">
-              <span className="meta-label">Target Completion Date</span>
-              <span className="meta-value">
+            <div className="detail-item">
+              <span className="detail-lbl">{t.targetDate}</span>
+              <span className="detail-val">
                 {filedResult.sla_deadline ? new Date(filedResult.sla_deadline).toLocaleDateString() : "Pending"}
               </span>
             </div>
           </div>
 
-          {/* Summary Box */}
-          <div style={{ background: "var(--surface-subtle)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--slate-200)", marginBottom: "1.75rem" }}>
-            <span style={{ fontSize: "0.72rem", fontFamily: "var(--font-mono)", fontWeight: 700, textTransform: "uppercase", color: "var(--slate-500)", display: "block", marginBottom: "4px" }}>
-              Registered Summary:
-            </span>
-            <p style={{ fontSize: "0.9rem", color: "var(--slate-800)", margin: 0 }}>
-              "{filedResult.complaint_text}"
-            </p>
-          </div>
-
-          {/* Action Bar */}
-          <div className="ticket-action-bar">
-            {filedResult.report_blob_url && (
-              <a
-                href={filedResult.report_blob_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-secondary btn-sm"
-              >
-                <ExternalLink size={14} />
-                <span>Azure Blob Audit Dossier</span>
-              </a>
-            )}
+          <div className="ticket-btn-row">
+            <button
+              type="button"
+              className="btn-track-ticket"
+              onClick={() => onNavigateToTracker(filedResult.tracking_id, filedResult)}
+            >
+              <Search size={16} />
+              <span>{t.trackStatusBtn}</span>
+              <ArrowRight size={14} />
+            </button>
 
             <button
               type="button"
-              className="btn btn-primary"
-              onClick={() => onNavigateToTracker(filedResult.tracking_id, filedResult)}
+              className="btn-ask-another"
+              onClick={handleReset}
             >
-              <Search size={15} />
-              <span>Track in Real-Time Lifecycle</span>
+              <RotateCcw size={15} />
+              <span>{t.askAnother}</span>
             </button>
           </div>
         </section>

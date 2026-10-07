@@ -8,7 +8,7 @@ import DepartmentMatrix from "./components/DepartmentMatrix";
 import OfficerDesk from "./components/OfficerDesk";
 import AdminLoginModal from "./components/AdminLoginModal";
 import PolicyClarifier from "./components/PolicyClarifier";
-import { Sparkles, BookOpen, Search, FileText, Building2 } from "lucide-react";
+import { Sparkles, BookOpen, Search, FileText, Building2, ArrowLeft } from "lucide-react";
 import gsap from "gsap";
 
 const DEFAULT_CHANDIGARH_COMPLAINTS = [
@@ -53,6 +53,7 @@ const DEFAULT_CHANDIGARH_COMPLAINTS = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("navigator"); // "navigator", "documents", "tracker", "policy_qa", "departments"
+  const [language, setLanguage] = useState("en"); // "en" | "hi" | "pa"
   
   // Page View & Admin Portal Auth State
   const [currentView, setCurrentView] = useState("citizen"); // "citizen" | "admin"
@@ -167,6 +168,9 @@ export default function App() {
         onOpenAdminPortal={handleOpenAdminPortal}
         onSwitchToCitizen={handleSwitchToCitizen}
         onLogout={handleLogout}
+        language={language}
+        onLanguageChange={setLanguage}
+        onOpenTracker={() => setActiveTab("tracker")}
       />
 
       {/* Main Container */}
@@ -179,58 +183,10 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Citizen Navigation Tabs with clear iconography and spacing */}
-            <nav className="nav-tabs" aria-label="Sections">
-              <button
-                type="button"
-                className={`tab-btn ${activeTab === "navigator" ? "active" : ""}`}
-                onClick={() => setActiveTab("navigator")}
-              >
-                <Sparkles size={16} />
-                <span>Grievance Navigator</span>
-              </button>
-              <button
-                type="button"
-                className={`tab-btn ${activeTab === "policy_qa" ? "active" : ""}`}
-                onClick={() => setActiveTab("policy_qa")}
-              >
-                <BookOpen size={16} />
-                <span>Policy Clarifier</span>
-              </button>
-              <button
-                type="button"
-                className={`tab-btn ${activeTab === "tracker" ? "active" : ""}`}
-                onClick={() => setActiveTab("tracker")}
-              >
-                <Search size={16} />
-                <span>Live Tracker</span>
-              </button>
-              <button
-                type="button"
-                className={`tab-btn ${activeTab === "documents" ? "active" : ""}`}
-                onClick={() => setActiveTab("documents")}
-              >
-                <FileText size={16} />
-                <span>Document OCR</span>
-              </button>
-              <button
-                type="button"
-                className={`tab-btn ${activeTab === "departments" ? "active" : ""}`}
-                onClick={() => setActiveTab("departments")}
-              >
-                <Building2 size={16} />
-                <span>Chandigarh Directory</span>
-              </button>
-            </nav>
-
-            {/* TAB 1: CHANDIGARH GRIEVANCE NAVIGATOR */}
-            {activeTab === "navigator" && (
-              <div className="tab-pane">
-                <PipelineStepper currentStep={currentStep} />
+            {/* Landing page view: No tabs, no dashboard clutter */}
+            {activeTab === "navigator" ? (
+              <div className="landing-view-wrapper">
                 <GrievanceNavigator
-                  complaints={complaints}
-                  selectedComplaintId={selectedComplaintId}
-                  setSelectedComplaintId={setSelectedComplaintId}
                   routingResult={routingResult}
                   setRoutingResult={setRoutingResult}
                   filedResult={filedResult}
@@ -240,48 +196,98 @@ export default function App() {
                   filingLoading={filingLoading}
                   setFilingLoading={setFilingLoading}
                   onNavigateToTracker={handleNavigateToTracker}
+                  onNavigateToDocuments={() => setActiveTab("documents")}
+                  language={language}
                 />
               </div>
-            )}
+            ) : (
+              /* Subpage views: Simple header with back button */
+              <div className="subpage-view-wrapper">
+                <div className="subpage-header-bar">
+                  <button
+                    type="button"
+                    className="btn-back-home"
+                    onClick={() => setActiveTab("navigator")}
+                  >
+                    <ArrowLeft size={16} />
+                    <span>Back to JanConnect</span>
+                  </button>
+                  <div className="subpage-tabs-strip">
+                    <button
+                      type="button"
+                      className={`subpage-tab ${activeTab === "tracker" ? "active" : ""}`}
+                      onClick={() => setActiveTab("tracker")}
+                    >
+                      <Search size={14} />
+                      <span>Track Complaint</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`subpage-tab ${activeTab === "documents" ? "active" : ""}`}
+                      onClick={() => setActiveTab("documents")}
+                    >
+                      <FileText size={14} />
+                      <span>Document OCR</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`subpage-tab ${activeTab === "policy_qa" ? "active" : ""}`}
+                      onClick={() => setActiveTab("policy_qa")}
+                    >
+                      <BookOpen size={14} />
+                      <span>Policy Clarifier</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`subpage-tab ${activeTab === "departments" ? "active" : ""}`}
+                      onClick={() => setActiveTab("departments")}
+                    >
+                      <Building2 size={14} />
+                      <span>Directory</span>
+                    </button>
+                  </div>
+                </div>
 
-            {/* TAB 2: POLICY CLARIFIER & CITIZEN DOUBTS */}
-            {activeTab === "policy_qa" && (
-              <div className="tab-pane">
-                <PolicyClarifier />
-              </div>
-            )}
+                {/* TAB 2: POLICY CLARIFIER & CITIZEN DOUBTS */}
+                {activeTab === "policy_qa" && (
+                  <div className="tab-pane">
+                    <PolicyClarifier />
+                  </div>
+                )}
 
-            {/* TAB 3: TRACK GRIEVANCE STATUS (STAGE 5) */}
-            {activeTab === "tracker" && (
-              <div className="tab-pane">
-                <StatusTracker
-                  lookupId={lookupId}
-                  setLookupId={setLookupId}
-                  trackedStatus={trackedStatus}
-                  setTrackedStatus={setTrackedStatus}
-                  trackingLoading={trackingLoading}
-                  setTrackingLoading={setTrackingLoading}
-                />
-              </div>
-            )}
+                {/* TAB 3: TRACK GRIEVANCE STATUS (STAGE 5) */}
+                {activeTab === "tracker" && (
+                  <div className="tab-pane">
+                    <StatusTracker
+                      lookupId={lookupId}
+                      setLookupId={setLookupId}
+                      trackedStatus={trackedStatus}
+                      setTrackedStatus={setTrackedStatus}
+                      trackingLoading={trackingLoading}
+                      setTrackingLoading={setTrackingLoading}
+                    />
+                  </div>
+                )}
 
-            {/* TAB 4: CITIZEN DOCUMENT INTELLIGENCE (STAGE 2) */}
-            {activeTab === "documents" && (
-              <div className="tab-pane">
-                <DocumentIntelligence
-                  availableDocs={availableDocs}
-                  extractedDocs={extractedDocs}
-                  setExtractedDocs={setExtractedDocs}
-                  docLoading={docLoading}
-                  setDocLoading={setDocLoading}
-                />
-              </div>
-            )}
+                {/* TAB 4: CITIZEN DOCUMENT INTELLIGENCE (STAGE 2) */}
+                {activeTab === "documents" && (
+                  <div className="tab-pane">
+                    <DocumentIntelligence
+                      availableDocs={availableDocs}
+                      extractedDocs={extractedDocs}
+                      setExtractedDocs={setExtractedDocs}
+                      docLoading={docLoading}
+                      setDocLoading={setDocLoading}
+                    />
+                  </div>
+                )}
 
-            {/* TAB 5: CHANDIGARH AUTHORITIES & POLICY MATRIX */}
-            {activeTab === "departments" && (
-              <div className="tab-pane">
-                <DepartmentMatrix departmentsList={departmentsList} />
+                {/* TAB 5: CHANDIGARH AUTHORITIES & POLICY MATRIX */}
+                {activeTab === "departments" && (
+                  <div className="tab-pane">
+                    <DepartmentMatrix departmentsList={departmentsList} />
+                  </div>
+                )}
               </div>
             )}
           </>

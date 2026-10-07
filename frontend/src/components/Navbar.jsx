@@ -1,34 +1,61 @@
 import { useState } from "react";
 import { Landmark, ShieldCheck, Activity, PhoneCall, LogIn, LogOut, ArrowLeft, X } from "lucide-react";
 
+const NAVBAR_TEXT = {
+  en: {
+    tagline: "Civic Resolution",
+    track: "Track Complaint",
+    helplines: "Helplines",
+    officer: "Officer",
+    officerDesk: "Officer Desk",
+  },
+  hi: {
+    tagline: "नागरिक समाधान",
+    track: "शिकायत ट्रैक करें",
+    helplines: "हेल्पलाइन",
+    officer: "अधिकारी",
+    officerDesk: "अधिकारी डेस्क",
+  },
+  pa: {
+    tagline: "ਨਾਗਰਿਕ ਹੱਲ",
+    track: "ਸ਼ਿਕਾਇਤ ਟਰੈਕ ਕਰੋ",
+    helplines: "ਹੈਲਪਲਾਈਨ",
+    officer: "ਅਧਿਕਾਰੀ",
+    officerDesk: "ਅਧਿਕਾਰੀ ਡੈਸਕ",
+  },
+};
+
 export default function Navbar({
   currentView = "citizen",
   isAdminAuthenticated = false,
   onOpenAdminPortal,
   onSwitchToCitizen,
   onLogout,
+  language = "en",
+  onLanguageChange,
+  onOpenTracker,
 }) {
   const [showHotlinesModal, setShowHotlinesModal] = useState(false);
+  const t = NAVBAR_TEXT[language] || NAVBAR_TEXT.en;
 
   return (
     <>
       <header className="navbar">
         <div className="navbar-container">
+          {/* JanConnect Logo & Name */}
           <div className="brand-wrapper" onClick={onSwitchToCitizen} style={{ cursor: "pointer" }} title="JanConnect Home">
             <div className="brand-icon-box">
-              <Landmark size={22} />
+              <Landmark size={20} />
             </div>
             <div className="brand-titles">
               <div className="brand-title-row">
-                <h1 className="brand-title">Chandigarh JanConnect</h1>
-                <span className="brand-lang-badge">ਚੰਡੀਗੜ੍ਹ ਜਨ ਕਨੈਕਟ • चंडीगढ़ जन कनेक्ट</span>
-              </div>
-              <div className="brand-sub">
-                Civic Grievance AI Resolution Bridge • Municipal Corporation (MCC) & UT Administration
+                <h1 className="brand-title">JanConnect</h1>
+                <span className="brand-tagline">{t.tagline}</span>
               </div>
             </div>
           </div>
 
+          {/* Header Actions */}
           <div className="nav-badges">
             {currentView === "admin" ? (
               <>
@@ -54,32 +81,50 @@ export default function Navbar({
               </>
             ) : (
               <>
+                {/* Language Selector */}
+                <div className="lang-selector-wrapper">
+                  <select
+                    className="lang-select"
+                    value={language}
+                    onChange={(e) => onLanguageChange && onLanguageChange(e.target.value)}
+                    aria-label="Select Language"
+                  >
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                  </select>
+                </div>
+
+                {/* Track Complaint Header Button */}
+                <button
+                  type="button"
+                  className="btn-nav-track"
+                  onClick={onOpenTracker}
+                  title={t.track}
+                >
+                  <span>{t.track}</span>
+                </button>
+
+                {/* Subtle 24x7 Hotline helper */}
                 <button
                   type="button"
                   className="hotline-trigger-btn"
                   onClick={() => setShowHotlinesModal(true)}
-                  title="View 24x7 Chandigarh Emergency Helplines"
+                  title="24x7 Emergency Helplines"
                 >
-                  <PhoneCall size={14} className="text-amber" />
-                  <span>24x7 Helplines</span>
+                  <PhoneCall size={13} className="text-amber" />
+                  <span>{t.helplines}</span>
                 </button>
 
-                <div className="atelier-tag tag-pilot">
-                  <Activity size={12} className="text-emerald" />
-                  <span>Pilot Active</span>
-                </div>
-                <div className="atelier-tag tag-azure">
-                  <ShieldCheck size={12} className="text-cobalt" />
-                  <span>Azure AI</span>
-                </div>
+                {/* Subtle Officer Desk Access */}
                 <button
                   type="button"
-                  className="btn-admin-portal"
+                  className="btn-admin-subtle"
                   onClick={onOpenAdminPortal}
-                  title="Access Municipal Officer Resolution Desk (Protected Portal)"
+                  title="Officer Resolution Portal"
                 >
-                  <LogIn size={14} />
-                  <span>{isAdminAuthenticated ? "Admin Desk (Active)" : "Officer Portal"}</span>
+                  <LogIn size={13} />
+                  <span>{isAdminAuthenticated ? t.officerDesk : t.officer}</span>
                 </button>
               </>
             )}
