@@ -296,15 +296,19 @@ JanConnect is customized and grounded for **Union Territory of Chandigarh (The C
 
 ### 1. Backend Server Setup
 ```bash
+# From the project root
 cd backend
 
-# Create & activate Python virtual environment
-python -m venv venv
+# Activate the project virtual environment
+# Windows PowerShell:
+& ..\.venv\Scripts\Activate.ps1
+# Windows cmd:
+# ..\.venv\Scripts\activate.bat
+# Linux / macOS:
+# source ../.venv/bin/activate
 
-# On Windows:
-.\venv\Scripts\activate
-# On Linux / macOS:
-source venv/bin/activate
+# If the venv does not exist yet, create it once:
+# python -m venv ../.venv
 
 # Install dependencies
 pip install -r requirements.txt
@@ -312,6 +316,8 @@ pip install -r requirements.txt
 # Start Flask API server (Port 5001)
 python app.py
 ```
+> Run the backend from the `backend/` folder. Do not launch `app.py` from the project root, because the Flask app is located in `backend/app.py`.
+>
 > The API server will be available at `http://localhost:5001`.
 
 ### 2. Frontend Client Setup
